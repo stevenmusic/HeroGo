@@ -4,25 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HeroGo! - 音樂冒險</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
         <h1>🎵 HeroGo! 音樂冒險</h1>
-        <p class="subtitle">日本漫畫風 • 點擊戰鬥 • 音符大師養成</p>
-        <div>關卡 <span id="stage">1</span>　|　音符正確率 <span id="accuracy">100</span>%</div>
+        <p class="subtitle">日本漫畫風 • 點擊戰鬥 • 音符練習</p>
+        <div>關卡 <span id="stage">1</span>　|　波數 <span id="wave">1</span></div>
     </header>
 
     <main>
         <div id="monster-container" class="monster-container">
             <div id="monster" class="monster">🎶</div>
-            <div id="note-display" class="note-display">♩</div>
+            <div id="note-display" class="note-display"></div>
             <div id="damage-popup" class="damage-popup"></div>
         </div>
 
         <div class="hp-container">
             <div id="hp-bar" class="hp-bar"><div id="hp-bar-inner"></div></div>
         </div>
+        <p>HP: <span id="hp">150</span> / <span id="maxhp">150</span></p>
 
         <div class="stats">
             點擊傷害: <span id="tapDmg">10</span>　|　DPS: <span id="dps">8</span><br>
@@ -31,21 +32,17 @@
 
         <div class="actions">
             <button onclick="tapMonster()" class="tap-btn">⚔️ 斬擊音符！</button>
-            <button onclick="upgradeHero()">🎸 升級英雄</button>
-            <button onclick="hireCompanion()">🎤 召喚音樂夥伴</button>
-            <button onclick="prestige()" class="prestige-btn">🌟 重生進階</button>
+            <button onclick="upgradeHero()">🔥 升級英雄</button>
+            <button onclick="hireCompanion()">👥 召喚夥伴</button>
+            <button onclick="prestige()" class="prestige-btn">🌟 重生</button>
         </div>
 
-        <!-- 音樂學習面板 -->
         <div class="music-panel">
             <h3>🎼 目前音符</h3>
-            <div id="current-note" class="big-note">Do</div>
-            <p id="clef-type">高音譜號 (Treble Clef)</p>
+            <div id="current-note" class="big-note">C4</div>
         </div>
-
-        <div id="artifacts" class="artifacts"></div>
     </main>
 
-    <script type="module" src="js/game.js"></script>
+    <script type="module" src="game.js"></script>
 </body>
 </html>
