@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Rhythm Titans</title>
-    <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <title>HeroGo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Noto+Sans+TC:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #0f172a;
@@ -15,6 +15,8 @@
             --danger: #ef4444;
             --text-main: #f8fafc;
             --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+            --hero-color: #ec4899; /* HeroGo 主色 - 粉紫色 */
+            --hero-secondary: #8b5cf6; /* HeroGo 次色 - 紫色 */
         }
 
         * { box-sizing: border-box; touch-action: manipulation; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -50,6 +52,28 @@
             background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
             z-index: 20;
             position: relative;
+        }
+
+        /* HeroGo 標題樣式 */
+        .hero-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'Orbitron', 'Russo One', sans-serif;
+            font-weight: 900;
+            font-size: 32px;
+            color: var(--hero-color);
+            text-shadow: 0 0 20px rgba(236, 72, 153, 0.5);
+            letter-spacing: 2px;
+            z-index: 25;
+        }
+
+        .hero-subtitle {
+            font-family: 'Noto Sans TC', sans-serif;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 4px;
+            letter-spacing: 1px;
         }
 
         .resource-box {
@@ -301,7 +325,12 @@
             align-items: center;
             border-bottom: 1px solid rgba(255,255,255,0.05);
         }
-        .drawer-title { font-family: 'Russo One'; font-size: 22px; color: var(--text-main); }
+        .drawer-title { 
+            font-family: 'Orbitron', 'Russo One'; 
+            font-size: 22px; 
+            color: var(--hero-color); 
+            text-shadow: 0 0 10px rgba(236, 72, 153, 0.3);
+        }
         .close-btn { background: rgba(255,255,255,0.1); border: none; width: 32px; height: 32px; border-radius: 50%; color: white; cursor: pointer; }
 
         .upgrade-scroll { flex: 1; overflow-y: auto; padding: 20px; }
@@ -365,6 +394,11 @@
 
     <!-- 頂部資源 -->
     <header>
+        <div class="hero-title">
+            HeroGo
+            <div class="hero-subtitle">Rhythm Titans</div>
+        </div>
+        
         <div class="resource-box">
             <span class="icon">⚔️</span>
             <div>
@@ -604,7 +638,7 @@
             const randomImgNum = imgNumbers[Math.floor(Math.random() * imgNumbers.length)];
             GameState.currentNote = IMG_NOTE_MAPPING[randomImgNum];
             
-            // 根據文件名生成圖片路徑
+            // 根據文件名生成圖片路徑（包含下划線）
             const imageUrl = `images/treble/IMG_${randomImgNum}.png`;
             
             // 調試：顯示當前選擇的圖片路徑
@@ -815,3 +849,4 @@
     </script>
 </body>
 </html>
+ㄩ
