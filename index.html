@@ -39,64 +39,74 @@
             top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 0;
-            opacity: 0.6; /* 增加粒子不透明度 */
+            opacity: 0.6;
+            pointer-events: none;
         }
 
         /* --- 頂部儀表板 --- */
         header {
-            height: 100px; /* 增加header高度 */
+            height: 110px; /* 增加高度以容納標題與資源框 */
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            justify-content: flex-start;
             align-items: center;
-            padding: 0 20px;
-            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+            padding-top: 10px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(15, 23, 42, 0.6) 100%, transparent 100%);
             z-index: 20;
             position: relative;
         }
 
         /* HeroGo 標題樣式 */
         .hero-title-container {
-            position: absolute;
-            left: 50%;
-            top: 20px;
-            transform: translateX(-50%);
             text-align: center;
             z-index: 25;
+            margin-bottom: 5px;
         }
 
         .hero-title {
             font-family: 'Orbitron', 'Russo One', sans-serif;
             font-weight: 900;
-            font-size: 36px;
+            font-size: 32px;
             color: var(--hero-color);
             text-shadow: 0 0 25px rgba(236, 72, 153, 0.7);
             letter-spacing: 3px;
             margin: 0;
+            line-height: 1;
         }
 
         .hero-subtitle {
             font-family: 'Noto Sans TC', sans-serif;
-            font-size: 14px;
+            font-size: 12px;
             color: rgba(255, 255, 255, 0.8);
-            margin-top: 5px;
+            margin-top: 4px;
             letter-spacing: 1px;
+        }
+
+        /* 資源框容器 */
+        .stats-container {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            width: 100%;
+            max-width: 600px;
         }
 
         .resource-box {
             display: flex;
             align-items: center;
             background: rgba(0, 0, 0, 0.5);
-            padding: 10px 20px;
+            padding: 5px 12px;
             border-radius: 12px;
             border: var(--glass-border);
             backdrop-filter: blur(4px);
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            margin: 0 10px;
+            flex: 1;
+            justify-content: center;
         }
 
-        .icon { font-size: 22px; margin-right: 10px; }
-        .label { font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; display: block; }
-        .value { font-family: 'Russo One', sans-serif; font-size: 20px; color: #fff; }
+        .icon { font-size: 18px; margin-right: 6px; }
+        .label { font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; display: block; }
+        .value { font-family: 'Russo One', sans-serif; font-size: 16px; color: #fff; }
 
         /* --- 主遊戲區 --- */
         #game-stage {
@@ -107,24 +117,27 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            padding-top: 20px; /* 稍微下移避免與header重疊 */
         }
 
         /* BOSS 倒數 */
         #boss-timer-bar {
             position: absolute;
-            top: 30px;
+            top: 20px;
             width: 200px;
-            height: 6px;
+            height: 8px;
             background: #333;
-            border-radius: 3px;
+            border-radius: 4px;
             overflow: hidden;
             opacity: 0;
             transition: opacity 0.3s;
+            border: 1px solid #555;
         }
         #boss-timer-fill {
             height: 100%;
             background: var(--danger);
             width: 100%;
+            box-shadow: 0 0 10px var(--danger);
         }
 
         /* 關卡指示器 */
@@ -132,39 +145,43 @@
             position: absolute;
             top: 50px;
             font-family: 'Russo One', sans-serif;
-            font-size: 32px;
-            color: rgba(255,255,255,0.1);
+            font-size: 48px;
+            color: rgba(255,255,255,0.05);
             font-weight: 900;
             transform: skew(-10deg);
+            z-index: 0;
+            pointer-events: none;
         }
 
         /* 怪物容器 */
         .monster-wrapper {
             position: relative;
-            width: 260px;
-            height: 260px;
+            width: 280px;
+            height: 280px;
             display: flex;
             justify-content: center;
             align-items: center;
+            z-index: 5;
         }
 
         /* 血條 */
         .hp-container {
             position: absolute;
-            top: -20px;
-            width: 180%;
-            height: 24px;
+            top: -30px;
+            width: 200%;
+            height: 28px;
             background: rgba(0,0,0,0.6);
-            border-radius: 12px;
+            border-radius: 14px;
             border: 2px solid #475569;
             overflow: hidden;
             box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            backdrop-filter: blur(2px);
         }
         .hp-fill {
             height: 100%;
             background: linear-gradient(90deg, #f59e0b, #ef4444);
             width: 100%;
-            box-shadow: 0 0 10px #ef4444;
+            box-shadow: 0 0 15px #ef4444;
             transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
         }
@@ -187,16 +204,16 @@
             position: relative;
             z-index: 5;
         }
-        .monster-sprite:active { transform: scale(0.95); }
+        .monster-sprite:active { transform: scale(0.9); }
 
-        /* 音符譜號容器 - 直接在怪物上顯示 */
+        /* 音符譜號容器 */
         .music-overlay {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 200px;
-            height: 100px;
+            width: 220px;
+            height: 140px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -210,7 +227,9 @@
             height: 100%;
             object-fit: contain;
             filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
-            border: 2px solid #3b82f6;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.2);
         }
 
         /* --- 底部鋼琴鍵盤 --- */
@@ -220,18 +239,19 @@
             padding: 10px 10px 20px 10px;
             display: flex;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             z-index: 20;
             border-top: 1px solid rgba(255,255,255,0.05);
             position: relative;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
         }
 
         .piano-key {
             flex: 1;
-            max-width: 55px;
+            max-width: 50px;
             background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
             border: 1px solid #475569;
-            border-radius: 0 0 8px 8px;
+            border-radius: 0 0 6px 6px;
             color: #94a3b8;
             font-size: 14px;
             font-weight: bold;
@@ -239,14 +259,17 @@
             flex-direction: column;
             justify-content: flex-end;
             align-items: center;
-            padding-bottom: 15px;
+            padding-bottom: 12px;
             box-shadow: 0 4px 0 #020617;
-            transition: all 0.1s;
+            
+            /* --- 新增：平滑過渡效果 --- */
+            transition: transform 0.1s ease, background-color 0.1s, box-shadow 0.1s;
+            cursor: pointer;
             position: relative;
             overflow: hidden;
         }
 
-        /* 按鍵內的高光 */
+        /* --- 新增：按鍵內高光效果 --- */
         .piano-key::after {
             content: '';
             position: absolute;
@@ -255,20 +278,24 @@
             pointer-events: none;
         }
 
-        .piano-key .sub-text { font-size: 10px; margin-bottom: 4px; opacity: 0.6; }
+        .piano-key .sub-text { font-size: 10px; margin-bottom: 2px; opacity: 0.7; pointer-events: none;}
 
+        /* --- 新增：按下時的樣式 (包含 active 和 :active) --- */
         .piano-key:active, .piano-key.active {
-            transform: translateY(4px);
-            box-shadow: 0 0 0 #020617;
-            background: var(--primary);
+            transform: translateY(4px) scale(0.95); /* 按下時下沉並略微縮小 */
+            box-shadow: 0 0 0 #020617, inset 0 0 10px rgba(0,0,0,0.3); /* 消除外陰影，添加內陰影 */
+            background: var(--primary); /* 按下時變亮 */
             color: white;
             border-color: #60a5fa;
         }
-        .piano-key:active .sub-text, .piano-key.active .sub-text { color: rgba(255,255,255,0.8); }
+        
+        .piano-key:active .sub-text, .piano-key.active .sub-text { 
+            color: rgba(255,255,255,0.9); 
+        }
 
         /* --- 導航列 --- */
         nav {
-            height: 70px;
+            height: 65px;
             background: rgba(30, 41, 59, 0.95);
             backdrop-filter: blur(10px);
             display: flex;
@@ -292,10 +319,10 @@
             transition: color 0.3s;
         }
         .nav-icon {
-            font-size: 24px;
+            font-size: 22px;
             background: rgba(255,255,255,0.05);
-            width: 40px; height: 40px;
-            border-radius: 12px;
+            width: 36px; height: 36px;
+            border-radius: 10px;
             display: flex; justify-content: center; align-items: center;
             transition: all 0.2s;
         }
@@ -312,7 +339,7 @@
             bottom: -100%;
             left: 0;
             width: 100%;
-            height: 75%;
+            height: 70%;
             background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(20px);
             border-radius: 30px 30px 0 0;
@@ -334,18 +361,18 @@
         }
         .drawer-title { 
             font-family: 'Orbitron', 'Russo One'; 
-            font-size: 24px; 
+            font-size: 22px; 
             color: var(--hero-color); 
             text-shadow: 0 0 10px rgba(236, 72, 153, 0.3);
         }
-        .close-btn { background: rgba(255,255,255,0.1); border: none; width: 32px; height: 32px; border-radius: 50%; color: white; cursor: pointer; }
+        .close-btn { background: rgba(255,255,255,0.1); border: none; width: 32px; height: 32px; border-radius: 50%; color: white; cursor: pointer; font-size: 18px;}
 
         .upgrade-scroll { flex: 1; overflow-y: auto; padding: 20px; }
         
         .upgrade-item {
             background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
             margin-bottom: 15px;
-            padding: 20px;
+            padding: 15px 20px;
             border-radius: 16px;
             border: 1px solid rgba(255,255,255,0.05);
             display: flex;
@@ -360,14 +387,14 @@
             background: var(--primary);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 25px;
+            padding: 8px 16px;
+            border-radius: 20px;
             font-weight: bold;
             font-size: 13px;
             box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
             cursor: pointer;
             white-space: nowrap;
-            min-width: 100px;
+            min-width: 90px;
         }
         .btn-upgrade:disabled { background: #334155; color: #64748b; box-shadow: none; cursor: not-allowed; }
 
@@ -406,25 +433,28 @@
             <div class="hero-subtitle">Rhythm Titans</div>
         </div>
         
-        <div class="resource-box">
-            <span class="icon">⚔️</span>
-            <div>
-                <span class="label">STAGE</span>
-                <span class="value" id="header-stage">1</span>
+        <!-- 將資源框包裝起來以便排版 -->
+        <div class="stats-container">
+            <div class="resource-box">
+                <span class="icon">⚔️</span>
+                <div>
+                    <span class="label">STAGE</span>
+                    <span class="value" id="header-stage">1</span>
+                </div>
             </div>
-        </div>
-        <div class="resource-box">
-            <span class="icon">⚡</span>
-            <div>
-                <span class="label">DPS</span>
-                <span class="value" id="header-dps">0</span>
+            <div class="resource-box">
+                <span class="icon">⚡</span>
+                <div>
+                    <span class="label">DPS</span>
+                    <span class="value" id="header-dps">0</span>
+                </div>
             </div>
-        </div>
-        <div class="resource-box" style="border-color: rgba(251, 191, 36, 0.3);">
-            <span class="icon">💰</span>
-            <div>
-                <span class="label">GOLD</span>
-                <span class="value text-gold" id="header-gold">0</span>
+            <div class="resource-box" style="border-color: rgba(251, 191, 36, 0.3);">
+                <span class="icon">💰</span>
+                <div>
+                    <span class="label">GOLD</span>
+                    <span class="value text-gold" id="header-gold">0</span>
+                </div>
             </div>
         </div>
     </header>
@@ -445,8 +475,9 @@
             <!-- 怪物本體 -->
             <div class="monster-sprite" id="monster-visual" onclick="tapDamage()">👾</div>
 
-            <!-- 音符譜號覆蓋層 - 直接在怪物上顯示 -->
+            <!-- 音符譜號覆蓋層 -->
             <div class="music-overlay" id="music-overlay">
+                <!-- 圖片 src 會由 JS 動態生成 -->
                 <img class="music-image" id="music-image" src="" alt="Music notation">
             </div>
         </div>
@@ -488,10 +519,11 @@
         <div class="upgrade-scroll" id="upgrade-list"></div>
     </aside>
 
-    <!-- 音效 (使用 Web Audio API 生成，避免外部文件) -->
+    <!-- 音效與遊戲邏輯 -->
     <script>
-        // 簡單的音效合成器
+        // --- 音效合成器 ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
         function playSound(type) {
             if (audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator();
@@ -517,34 +549,31 @@
                 osc.stop(audioCtx.currentTime + 0.2);
             }
         }
-    </script>
 
-    <!-- 遊戲邏輯 -->
-    <script>
-        // --- 數據與配置 ---
+        // --- 遊戲數據與配置 ---
         const MONSTERS = ['👾', '👹', '👻', '🤖', '🦖', '👽', '💀', '🧟'];
         const CLEFS = [
             { symbol: 'treble', name: 'Treble' },  // 高音譜號
             { symbol: 'bass', name: 'Bass' }      // 低音譜號
         ];
         
-        // IMG_2528-2542 對應的音符映射
-        const IMG_NOTE_MAPPING = {
-            '2528': 'C4',
-            '2529': 'D4', 
-            '2530': 'E4',
-            '2531': 'F4',
-            '2532': 'G4',
-            '2533': 'A4',
-            '2534': 'B4',
-            '2535': 'C5',
-            '2536': 'D5',
-            '2537': 'E5',
-            '2538': 'F5',
-            '2539': 'G5',
-            '2540': 'A5',
-            '2541': 'B5',
-            '2542': 'C6'
+        // 【修改】完整的圖片與音符映射 (C4 - C6)
+        const noteMapping = {
+            "IMG_2528.jpeg": "C4",
+            "IMG_2529.jpeg": "D4",
+            "IMG_2530.jpeg": "E4",
+            "IMG_2531.jpeg": "F4",
+            "IMG_2532.jpeg": "G4",
+            "IMG_2533.jpeg": "A4",
+            "IMG_2534.jpeg": "B4",
+            "IMG_2535.jpeg": "C5",
+            "IMG_2536.jpeg": "D5",
+            "IMG_2537.jpeg": "E5",
+            "IMG_2538.jpeg": "F5",
+            "IMG_2539.jpeg": "G5",
+            "IMG_2540.jpeg": "A5",
+            "IMG_2541.jpeg": "B5",
+            "IMG_2542.jpeg": "C6"
         };
 
         const GameState = {
@@ -577,15 +606,23 @@
 
         // --- 初始化 ---
         function init() {
+            // 【修改】全局圖片錯誤處理
+            document.querySelectorAll('img').forEach(img => {
+                img.onerror = function() {
+                    this.style.display = 'none';
+                    console.error('圖片加載失敗，已隱藏:', this.src);
+                };
+            });
+
             spawnMonster();
             renderUpgrades();
-            initParticles(); // 啟動背景粒子
+            initParticles();
             requestAnimationFrame(gameLoop);
         }
 
         // --- 核心循環 ---
         function gameLoop(timestamp) {
-            // 自動攻擊 (每秒一次)
+            // 自動攻擊
             if (timestamp - GameState.lastAutoTime > 1000) {
                 if (GameState.monsterHp > 0) {
                     dealDamage(PlayerStats.autoDPS, false, false);
@@ -599,7 +636,7 @@
                     document.getElementById('boss-timer-fill').style.width = pct + '%';
                     
                     if (GameState.bossTimer <= 0) {
-                        respawnBoss(); // 時間到重置 Boss
+                        respawnBoss(); 
                     }
                 }
             }
@@ -617,7 +654,7 @@
                 GameState.bossTimer = 30;
                 GameState.bossMaxTime = 30;
                 document.getElementById('boss-timer-bar').style.opacity = 1;
-                document.getElementById('monster-visual').innerText = '👹'; // Boss Icon
+                document.getElementById('monster-visual').innerText = '👹'; 
             } else {
                 GameState.isBoss = false;
                 document.getElementById('boss-timer-bar').style.opacity = 0;
@@ -640,37 +677,25 @@
         function generateQuiz() {
             GameState.currentClef = CLEFS[Math.floor(Math.random() * CLEFS.length)];
             
-            // 從 IMG_NOTE_MAPPING 中隨機選擇一個音符
-            const imgNumbers = Object.keys(IMG_NOTE_MAPPING);
-            const randomImgNum = imgNumbers[Math.floor(Math.random() * imgNumbers.length)];
-            GameState.currentNote = IMG_NOTE_MAPPING[randomImgNum];
+            // 從 noteMapping 中隨機選擇一個檔名
+            const imgFileNames = Object.keys(noteMapping);
+            const randomFileName = imgFileNames[Math.floor(Math.random() * imgFileNames.length)];
+            GameState.currentNote = noteMapping[randomFileName];
             
-            // 根據文件名生成圖片路徑（包含下划線）
-            const imageUrl = `images/treble/IMG_${randomImgNum}.png`;
+            // 假設圖片在 images/treble/ 資料夾下 (依照您的需求調整路徑)
+            // 如果圖片就在根目錄，請改為 randomFileName
+            const imageUrl = `images/treble/${randomFileName}`;
             
-            // 調試：顯示當前選擇的圖片路徑
-            console.log('Loading image:', imageUrl);
-            console.log('Current note:', GameState.currentNote);
-            
+            // 設置圖片
             const imgElement = document.getElementById('music-image');
             imgElement.src = imageUrl;
             
-            // 添加錯誤處理
-            imgElement.onerror = function() {
-                console.error('Failed to load image:', imageUrl);
-                // 如果圖片加載失敗，顯示預設的問號圖片或錯誤信息
-                imgElement.src = 'https://via.placeholder.com/200x100?text=Error'; // 錯誤占位符
-                showToast('圖片加載失敗，請檢查路徑');
-            };
-            
-            imgElement.onload = function() {
-                console.log('Image loaded successfully:', imageUrl);
-            };
+            console.log('載入圖片:', imageUrl);
+            console.log('正確答案:', GameState.currentNote);
         }
 
         // --- 傷害與交互 ---
         function tapDamage() {
-            // 點擊怪物造成 20% 傷害
             const dmg = Math.floor(PlayerStats.baseDamage * 0.2);
             dealDamage(dmg, false, true);
             playSound('hit');
@@ -678,11 +703,12 @@
 
         function handleInput(note) {
             const btn = document.querySelector(`.piano-key[onclick="handleInput('${note}')"]`);
-            btn.classList.add('active');
-            setTimeout(() => btn.classList.remove('active'), 100);
+            if(btn) {
+                btn.classList.add('active');
+                setTimeout(() => btn.classList.remove('active'), 100);
+            }
 
-            // 比較輸入的音符和當前顯示的音符
-            const noteWithoutOctave = note; // 簡化比較，只比較音名
+            const noteWithoutOctave = note; 
             const currentNoteWithoutOctave = GameState.currentNote.substring(0, 1);
             
             if (noteWithoutOctave === currentNoteWithoutOctave) {
@@ -692,7 +718,7 @@
                 if (isCrit) dmg *= PlayerStats.critMult;
                 
                 dealDamage(Math.floor(dmg), isCrit, true);
-                generateQuiz(); // 答對後生成新題目
+                generateQuiz(); 
             } else {
                 showToast("音準偏差！");
             }
@@ -701,7 +727,6 @@
         function dealDamage(amount, isCrit, isPlayerAction) {
             GameState.monsterHp -= amount;
             
-            // 視覺特效
             showDamageNumber(amount, isCrit);
             if (isPlayerAction) playSound('hit');
 
@@ -720,7 +745,7 @@
             
             GameState.stage++;
             spawnMonster();
-            renderUpgrades(); // 刷新按鈕狀態
+            renderUpgrades();
         }
 
         // --- UI 更新 ---
@@ -741,7 +766,6 @@
             el.className = `damage-number ${isCrit ? 'crit' : ''}`;
             el.innerText = formatNumber(amount);
             
-            // 隨機位置
             const rect = document.querySelector('.monster-wrapper').getBoundingClientRect();
             const x = rect.left + rect.width/2 + (Math.random()-0.5)*100;
             const y = rect.top + rect.height/2;
@@ -804,13 +828,12 @@
         }
 
         function showToast(msg) {
-            // 簡單的提示
             const toast = document.createElement('div');
             toast.style.cssText = `
                 position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-                background: rgba(0,0,0,0.8); color: white; padding: 10px 20px;
-                border-radius: 20px; z-index: 200; font-weight: bold;
-                animation: popIn 0.3s; pointer-events: none;
+                background: rgba(0,0,0,0.8); color: white; padding: 12px 24px;
+                border-radius: 30px; z-index: 200; font-weight: bold; border: 1px solid rgba(255,255,255,0.2);
+                animation: popIn 0.3s; pointer-events: none; text-align: center;
             `;
             toast.innerText = msg;
             document.body.appendChild(toast);
@@ -825,14 +848,14 @@
             canvas.height = window.innerHeight;
 
             const particles = [];
-            for(let i=0; i<50; i++) { // 增加粒子數量
+            for(let i=0; i<50; i++) {
                 particles.push({
                     x: Math.random() * canvas.width,
                     y: Math.random() * canvas.height,
-                    r: Math.random() * 3 + 1, // 增加粒子大小
+                    r: Math.random() * 3 + 1,
                     d: Math.random() * Math.PI * 2,
-                    s: Math.random() * 0.8 + 0.2, // 增加粒子速度
-                    color: `hsl(${Math.random() * 60 + 200}, 70%, 60%)` // 藍紫色系
+                    s: Math.random() * 0.8 + 0.2,
+                    color: `hsl(${Math.random() * 60 + 200}, 70%, 60%)`
                 });
             }
 
@@ -844,8 +867,6 @@
                     ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
                     ctx.fillStyle = p.color;
                     ctx.fill();
-                    
-                    // 添加發光效果
                     ctx.shadowBlur = 10;
                     ctx.shadowColor = p.color;
                     ctx.fill();
