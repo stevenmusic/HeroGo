@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>HeroGo</title>
     <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Noto+Sans+TC:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -15,8 +15,9 @@
             --danger: #ef4444;
             --text-main: #f8fafc;
             --glass-border: 1px solid rgba(255, 255, 255, 0.1);
-            --hero-color: #ec4899; /* HeroGo 主色 - 粉紫色 */
-            --hero-secondary: #8b5cf6; /* HeroGo 次色 - 紫色 */
+            --hero-color: #ec4899; 
+            --hero-secondary: #8b5cf6; 
+            --nav-height: 65px; /* 定義導航欄高度 */
         }
 
         * { box-sizing: border-box; touch-action: manipulation; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -31,6 +32,8 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
+            /* 防止 iOS 底部安全區域被遮擋 */
+            padding-bottom: env(safe-area-inset-bottom);
         }
 
         /* --- 背景粒子效果 --- */
@@ -45,7 +48,7 @@
 
         /* --- 頂部儀表板 --- */
         header {
-            height: 110px; /* 增加高度以容納標題與資源框 */
+            height: 110px;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
@@ -54,9 +57,9 @@
             background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(15, 23, 42, 0.6) 100%, transparent 100%);
             z-index: 20;
             position: relative;
+            flex-shrink: 0; /* 防止 header 被壓縮 */
         }
 
-        /* HeroGo 標題樣式 */
         .hero-title-container {
             text-align: center;
             z-index: 25;
@@ -82,20 +85,20 @@
             letter-spacing: 1px;
         }
 
-        /* 資源框容器 */
         .stats-container {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             justify-content: center;
             width: 100%;
             max-width: 600px;
+            padding: 0 10px;
         }
 
         .resource-box {
             display: flex;
             align-items: center;
             background: rgba(0, 0, 0, 0.5);
-            padding: 5px 12px;
+            padding: 4px 10px;
             border-radius: 12px;
             border: var(--glass-border);
             backdrop-filter: blur(4px);
@@ -104,9 +107,9 @@
             justify-content: center;
         }
 
-        .icon { font-size: 18px; margin-right: 6px; }
-        .label { font-size: 9px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; display: block; }
-        .value { font-family: 'Russo One', sans-serif; font-size: 16px; color: #fff; }
+        .icon { font-size: 16px; margin-right: 5px; }
+        .label { font-size: 8px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; display: block; }
+        .value { font-family: 'Russo One', sans-serif; font-size: 14px; color: #fff; }
 
         /* --- 主遊戲區 --- */
         #game-stage {
@@ -117,7 +120,10 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding-top: 20px; /* 稍微下移避免與header重疊 */
+            padding-top: 10px;
+            /* 確保內容不被底部的固定導航欄遮住 */
+            padding-bottom: calc(var(--nav-height) + 20px); 
+            overflow: hidden;
         }
 
         /* BOSS 倒數 */
@@ -132,6 +138,7 @@
             opacity: 0;
             transition: opacity 0.3s;
             border: 1px solid #555;
+            z-index: 15;
         }
         #boss-timer-fill {
             height: 100%;
@@ -140,7 +147,6 @@
             box-shadow: 0 0 10px var(--danger);
         }
 
-        /* 關卡指示器 */
         .stage-indicator {
             position: absolute;
             top: 50px;
@@ -153,7 +159,6 @@
             pointer-events: none;
         }
 
-        /* 怪物容器 */
         .monster-wrapper {
             position: relative;
             width: 280px;
@@ -162,26 +167,28 @@
             justify-content: center;
             align-items: center;
             z-index: 5;
+            margin-top: 20px; /* 整體稍微下移 */
         }
 
-        /* 血條 */
+        /* 修改1：血條長度調整 (原 200% -> 90%) */
         .hp-container {
             position: absolute;
-            top: -30px;
-            width: 200%;
-            height: 28px;
+            top: 10px; /* 修改2：位置下移 (原 -30px -> 10px) */
+            width: 90%; 
+            height: 24px;
             background: rgba(0,0,0,0.6);
-            border-radius: 14px;
+            border-radius: 12px;
             border: 2px solid #475569;
             overflow: hidden;
             box-shadow: 0 0 15px rgba(0,0,0,0.5);
             backdrop-filter: blur(2px);
+            z-index: 20; /* 確保在怪物上方 */
         }
         .hp-fill {
             height: 100%;
             background: linear-gradient(90deg, #f59e0b, #ef4444);
             width: 100%;
-            box-shadow: 0 0 15px #ef4444;
+            box-shadow: 0 0 10px #ef4444;
             transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
         }
@@ -189,31 +196,31 @@
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             display: flex; align-items: center; justify-content: center;
-            font-size: 12px; font-weight: bold; color: white;
+            font-size: 11px; font-weight: bold; color: white;
             text-shadow: 1px 1px 2px black;
             z-index: 2;
         }
 
-        /* 怪物本體 */
         .monster-sprite {
-            font-size: 140px;
+            font-size: 120px; /* 稍微縮小怪物讓空間給圖片 */
             filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.4));
             animation: float 3s ease-in-out infinite;
             cursor: pointer;
             transition: transform 0.05s;
             position: relative;
             z-index: 5;
+            margin-top: 40px; /* 讓怪物位置更低 */
         }
         .monster-sprite:active { transform: scale(0.9); }
 
-        /* 音符譜號容器 */
+        /* 修改3：圖片加大 (原 220px -> 340px) */
         .music-overlay {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 220px;
-            height: 140px;
+            width: 340px; 
+            height: 200px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -221,7 +228,6 @@
             pointer-events: none;
         }
 
-        /* 音符譜號圖片 */
         .music-image {
             width: 100%;
             height: 100%;
@@ -234,9 +240,9 @@
 
         /* --- 底部鋼琴鍵盤 --- */
         #piano-deck {
-            height: 160px;
+            height: 140px; /* 稍微減少高度，為導航欄騰出空間 */
             background: linear-gradient(0deg, #1e293b 0%, #0f172a 100%);
-            padding: 10px 10px 20px 10px;
+            padding: 10px 10px 10px 10px; /* 調整底部 padding */
             display: flex;
             justify-content: center;
             gap: 6px;
@@ -244,6 +250,7 @@
             border-top: 1px solid rgba(255,255,255,0.05);
             position: relative;
             box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
+            flex-shrink: 0;
         }
 
         .piano-key {
@@ -259,17 +266,14 @@
             flex-direction: column;
             justify-content: flex-end;
             align-items: center;
-            padding-bottom: 12px;
+            padding-bottom: 10px;
             box-shadow: 0 4px 0 #020617;
-            
-            /* --- 新增：平滑過渡效果 --- */
             transition: transform 0.1s ease, background-color 0.1s, box-shadow 0.1s;
             cursor: pointer;
             position: relative;
             overflow: hidden;
         }
 
-        /* --- 新增：按鍵內高光效果 --- */
         .piano-key::after {
             content: '';
             position: absolute;
@@ -280,11 +284,10 @@
 
         .piano-key .sub-text { font-size: 10px; margin-bottom: 2px; opacity: 0.7; pointer-events: none;}
 
-        /* --- 新增：按下時的樣式 (包含 active 和 :active) --- */
         .piano-key:active, .piano-key.active {
-            transform: translateY(4px) scale(0.95); /* 按下時下沉並略微縮小 */
-            box-shadow: 0 0 0 #020617, inset 0 0 10px rgba(0,0,0,0.3); /* 消除外陰影，添加內陰影 */
-            background: var(--primary); /* 按下時變亮 */
+            transform: translateY(4px) scale(0.95);
+            box-shadow: 0 0 0 #020617, inset 0 0 10px rgba(0,0,0,0.3);
+            background: var(--primary);
             color: white;
             border-color: #60a5fa;
         }
@@ -293,16 +296,21 @@
             color: rgba(255,255,255,0.9); 
         }
 
-        /* --- 導航列 --- */
+        /* 修改4：底部導航欄固定 */
         nav {
-            height: 65px;
+            position: fixed; /* 固定定位 */
+            bottom: 0;       /* 貼齊底部 */
+            left: 0;
+            width: 100%;
+            height: var(--nav-height); /* 使用變數高度 */
             background: rgba(30, 41, 59, 0.95);
             backdrop-filter: blur(10px);
             display: flex;
             justify-content: space-around;
             align-items: center;
             border-top: 1px solid rgba(255,255,255,0.1);
-            z-index: 30;
+            z-index: 100; /* 提升層級確保在最上方 */
+            /* 處理 iPhone X+ 的底部安全區域 */
             padding-bottom: env(safe-area-inset-bottom);
         }
 
@@ -317,6 +325,9 @@
             gap: 4px;
             cursor: pointer;
             transition: color 0.3s;
+            width: 100%;
+            height: 100%;
+            justify-content: center;
         }
         .nav-icon {
             font-size: 22px;
@@ -333,7 +344,7 @@
         }
         .nav-btn.active { color: white; }
 
-        /* --- 升級面板 (玻璃擬態) --- */
+        /* --- 升級面板 --- */
         #upgrade-drawer {
             position: fixed;
             bottom: -100%;
@@ -344,11 +355,13 @@
             backdrop-filter: blur(20px);
             border-radius: 30px 30px 0 0;
             transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            z-index: 100;
+            z-index: 200; /* 高於導航欄 */
             display: flex;
             flex-direction: column;
             box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
             border-top: 1px solid rgba(255,255,255,0.1);
+            /* 抽屜打開時也要考慮底部安全區域 */
+            padding-bottom: env(safe-area-inset-bottom);
         }
         #upgrade-drawer.open { bottom: 0; }
 
@@ -412,28 +425,24 @@
         .crit { color: var(--gold); font-size: 1.5em; text-shadow: 0 0 10px var(--gold); }
 
         /* --- 動畫定義 --- */
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         @keyframes popIn { 0% { transform: scale(0); } 80% { transform: scale(1.1); } 100% { transform: scale(1); } }
         @keyframes damageFly { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 20% { transform: translateY(-30px) scale(1.2); opacity: 1; } 100% { transform: translateY(-80px) scale(1); opacity: 0; } }
 
-        /* 實用工具 */
         .text-gold { color: var(--gold); }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <!-- 背景特效 Canvas -->
     <canvas id="bg-canvas"></canvas>
 
-    <!-- 頂部資源 -->
     <header>
         <div class="hero-title-container">
             <h1 class="hero-title">HeroGo</h1>
             <div class="hero-subtitle">Rhythm Titans</div>
         </div>
         
-        <!-- 將資源框包裝起來以便排版 -->
         <div class="stats-container">
             <div class="resource-box">
                 <span class="icon">⚔️</span>
@@ -459,11 +468,9 @@
         </div>
     </header>
 
-    <!-- 遊戲主畫面 -->
     <section id="game-stage">
         <div class="stage-indicator">STAGE <span id="bg-stage-num">1</span></div>
         
-        <!-- BOSS 倒數 -->
         <div id="boss-timer-bar"><div id="boss-timer-fill"></div></div>
 
         <div class="monster-wrapper">
@@ -472,18 +479,14 @@
                 <div class="hp-text"><span id="hp-current">10</span> / <span id="hp-max">10</span></div>
             </div>
 
-            <!-- 怪物本體 -->
             <div class="monster-sprite" id="monster-visual" onclick="tapDamage()">👾</div>
 
-            <!-- 音符譜號覆蓋層 -->
             <div class="music-overlay" id="music-overlay">
-                <!-- 圖片 src 會由 JS 動態生成 -->
                 <img class="music-image" id="music-image" src="" alt="Music notation">
             </div>
         </div>
     </section>
 
-    <!-- 鋼琴鍵盤 -->
     <section id="piano-deck">
         <button class="piano-key" onclick="handleInput('C')"><span class="sub-text">Do</span>C</button>
         <button class="piano-key" onclick="handleInput('D')"><span class="sub-text">Re</span>D</button>
@@ -494,7 +497,7 @@
         <button class="piano-key" onclick="handleInput('B')"><span class="sub-text">Si</span>B</button>
     </section>
 
-    <!-- 導航 -->
+    <!-- 導航 (固定在底部) -->
     <nav>
         <button class="nav-btn active">
             <div class="nav-icon">🎮</div>
@@ -519,9 +522,7 @@
         <div class="upgrade-scroll" id="upgrade-list"></div>
     </aside>
 
-    <!-- 音效與遊戲邏輯 -->
     <script>
-        // --- 音效合成器 ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
         function playSound(type) {
@@ -550,14 +551,12 @@
             }
         }
 
-        // --- 遊戲數據與配置 ---
         const MONSTERS = ['👾', '👹', '👻', '🤖', '🦖', '👽', '💀', '🧟'];
         const CLEFS = [
-            { symbol: 'treble', name: 'Treble' },  // 高音譜號
-            { symbol: 'bass', name: 'Bass' }      // 低音譜號
+            { symbol: 'treble', name: 'Treble' }, 
+            { symbol: 'bass', name: 'Bass' }     
         ];
         
-        // 【修改】完整的圖片與音符映射 (C4 - C6)
         const noteMapping = {
             "IMG_2528.jpeg": "C4",
             "IMG_2529.jpeg": "D4",
@@ -604,9 +603,7 @@
             { id: 'gold', name: '搖滾天后', desc: '金幣獲取 +20%', level: 0, baseCost: 150, costFactor: 1.4, effect: () => { PlayerStats.goldMult += 0.2; } }
         ];
 
-        // --- 初始化 ---
         function init() {
-            // 【修改】全局圖片錯誤處理
             document.querySelectorAll('img').forEach(img => {
                 img.onerror = function() {
                     this.style.display = 'none';
@@ -620,16 +617,13 @@
             requestAnimationFrame(gameLoop);
         }
 
-        // --- 核心循環 ---
         function gameLoop(timestamp) {
-            // 自動攻擊
             if (timestamp - GameState.lastAutoTime > 1000) {
                 if (GameState.monsterHp > 0) {
                     dealDamage(PlayerStats.autoDPS, false, false);
                 }
                 GameState.lastAutoTime = timestamp;
 
-                // BOSS 倒數
                 if (GameState.isBoss) {
                     GameState.bossTimer--;
                     const pct = (GameState.bossTimer / GameState.bossMaxTime) * 100;
@@ -643,7 +637,6 @@
             requestAnimationFrame(gameLoop);
         }
 
-        // --- 怪物邏輯 ---
         function spawnMonster() {
             const growth = 1.55;
             let hp = 15 * Math.pow(growth, GameState.stage - 1);
@@ -677,16 +670,12 @@
         function generateQuiz() {
             GameState.currentClef = CLEFS[Math.floor(Math.random() * CLEFS.length)];
             
-            // 從 noteMapping 中隨機選擇一個檔名
             const imgFileNames = Object.keys(noteMapping);
             const randomFileName = imgFileNames[Math.floor(Math.random() * imgFileNames.length)];
             GameState.currentNote = noteMapping[randomFileName];
             
-            // 假設圖片在 images/treble/ 資料夾下 (依照您的需求調整路徑)
-            // 如果圖片就在根目錄，請改為 randomFileName
             const imageUrl = `images/treble/${randomFileName}`;
             
-            // 設置圖片
             const imgElement = document.getElementById('music-image');
             imgElement.src = imageUrl;
             
@@ -694,7 +683,6 @@
             console.log('正確答案:', GameState.currentNote);
         }
 
-        // --- 傷害與交互 ---
         function tapDamage() {
             const dmg = Math.floor(PlayerStats.baseDamage * 0.2);
             dealDamage(dmg, false, true);
@@ -712,7 +700,6 @@
             const currentNoteWithoutOctave = GameState.currentNote.substring(0, 1);
             
             if (noteWithoutOctave === currentNoteWithoutOctave) {
-                // 答對
                 let dmg = PlayerStats.baseDamage;
                 const isCrit = Math.random() < PlayerStats.critChance;
                 if (isCrit) dmg *= PlayerStats.critMult;
@@ -748,7 +735,6 @@
             renderUpgrades();
         }
 
-        // --- UI 更新 ---
         function updateUI() {
             document.getElementById('header-stage').innerText = GameState.stage;
             document.getElementById('bg-stage-num').innerText = GameState.stage;
@@ -782,7 +768,6 @@
             drawer.classList.toggle('open');
         }
 
-        // --- 升級系統 ---
         function renderUpgrades() {
             const list = document.getElementById('upgrade-list');
             list.innerHTML = '';
@@ -820,7 +805,6 @@
             }
         }
 
-        // --- 輔助功能 ---
         function formatNumber(num) {
             if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
             if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
@@ -832,7 +816,7 @@
             toast.style.cssText = `
                 position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
                 background: rgba(0,0,0,0.8); color: white; padding: 12px 24px;
-                border-radius: 30px; z-index: 200; font-weight: bold; border: 1px solid rgba(255,255,255,0.2);
+                border-radius: 30px; z-index: 300; font-weight: bold; border: 1px solid rgba(255,255,255,0.2);
                 animation: popIn 0.3s; pointer-events: none; text-align: center;
             `;
             toast.innerText = msg;
@@ -840,7 +824,6 @@
             setTimeout(() => toast.remove(), 1500);
         }
 
-        // --- 背景粒子效果 ---
         function initParticles() {
             const canvas = document.getElementById('bg-canvas');
             const ctx = canvas.getContext('2d');
@@ -881,7 +864,6 @@
             draw();
         }
 
-        // 啟動遊戲
         init();
     </script>
 </body>
