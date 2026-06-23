@@ -2,13 +2,13 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
+    <!-- 強制使用最大縮放，防止瀏覽器自動縮放導致排版偏離 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>HeroGo</title>
     <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Noto+Sans+TC:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #0f172a;
-            --panel-bg: rgba(30, 41, 59, 0.7);
             --primary: #3b82f6;
             --accent: #8b5cf6;
             --gold: #fbbf24;
@@ -17,7 +17,7 @@
             --glass-border: 1px solid rgba(255, 255, 255, 0.1);
             --hero-color: #ec4899; 
             --hero-secondary: #8b5cf6; 
-            --nav-height: 65px; /* 定義導航欄高度 */
+            --nav-height: 70px; /* 導航欄高度 */
         }
 
         * { box-sizing: border-box; touch-action: manipulation; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -28,15 +28,17 @@
             font-family: 'Noto Sans TC', sans-serif;
             background: radial-gradient(circle at top, #1e1b4b 0%, #0f172a 60%, #000000 100%);
             color: var(--text-main);
-            overflow: hidden;
+            /* 防止滾動，鎖定畫面 */
+            overflow: hidden; 
             height: 100vh;
+            width: 100vw;
             display: flex;
             flex-direction: column;
-            /* 防止 iOS 底部安全區域被遮擋 */
+            /* iOS 安全區域 */
             padding-bottom: env(safe-area-inset-bottom);
         }
 
-        /* --- 背景粒子效果 --- */
+        /* --- 背景粒子 --- */
         #bg-canvas {
             position: absolute;
             top: 0; left: 0;
@@ -48,38 +50,35 @@
 
         /* --- 頂部儀表板 --- */
         header {
-            height: 110px;
+            flex-shrink: 0; /* 防止被壓縮 */
+            min-height: 100px;
+            padding: 10px 20px 5px 20px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(15, 23, 42, 0.4) 100%, transparent 100%);
+            z-index: 20;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
             align-items: center;
-            padding-top: 10px;
-            background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(15, 23, 42, 0.6) 100%, transparent 100%);
-            z-index: 20;
-            position: relative;
-            flex-shrink: 0; /* 防止 header 被壓縮 */
         }
 
         .hero-title-container {
             text-align: center;
-            z-index: 25;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
 
         .hero-title {
             font-family: 'Orbitron', 'Russo One', sans-serif;
             font-weight: 900;
-            font-size: 32px;
+            font-size: clamp(24px, 5vw, 36px); /* 響應式字體大小 */
             color: var(--hero-color);
             text-shadow: 0 0 25px rgba(236, 72, 153, 0.7);
-            letter-spacing: 3px;
+            letter-spacing: 2px;
             margin: 0;
-            line-height: 1;
+            line-height: 1.1;
         }
 
         .hero-subtitle {
             font-family: 'Noto Sans TC', sans-serif;
-            font-size: 12px;
+            font-size: clamp(10px, 2.5vw, 14px);
             color: rgba(255, 255, 255, 0.8);
             margin-top: 4px;
             letter-spacing: 1px;
@@ -87,31 +86,30 @@
 
         .stats-container {
             display: flex;
-            gap: 8px;
-            justify-content: center;
+            gap: clamp(5px, 1vw, 15px);
             width: 100%;
-            max-width: 600px;
-            padding: 0 10px;
+            max-width: 800px; /* 平板上限 */
+            justify-content: center;
         }
 
         .resource-box {
             display: flex;
             align-items: center;
             background: rgba(0, 0, 0, 0.5);
-            padding: 4px 10px;
+            padding: 5px 15px;
             border-radius: 12px;
             border: var(--glass-border);
             backdrop-filter: blur(4px);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             flex: 1;
             justify-content: center;
+            min-width: 80px; /* 防止過小 */
         }
 
-        .icon { font-size: 16px; margin-right: 5px; }
-        .label { font-size: 8px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; display: block; }
-        .value { font-family: 'Russo One', sans-serif; font-size: 14px; color: #fff; }
+        .icon { font-size: clamp(16px, 4vw, 24px); margin-right: 8px; }
+        .label { font-size: clamp(8px, 2vw, 12px); color: #94a3b8; text-transform: uppercase; display: block; }
+        .value { font-family: 'Russo One', sans-serif; font-size: clamp(14px, 4vw, 20px); color: #fff; }
 
-        /* --- 主遊戲區 --- */
+        /* --- 主遊戲區 (核心響應式區域) --- */
         #game-stage {
             flex: 1;
             position: relative;
@@ -119,26 +117,25 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start; /* 從上往下排，確保大圖片可見 */
             padding-top: 10px;
-            /* 確保內容不被底部的固定導航欄遮住 */
-            padding-bottom: calc(var(--nav-height) + 20px); 
+            /* 修正：確保內容不被底部導航欄遮住，且不被鋼琴遮住 */
+            padding-bottom: calc(var(--nav-height) + 180px); 
+            width: 100%;
             overflow: hidden;
         }
 
-        /* BOSS 倒數 */
         #boss-timer-bar {
             position: absolute;
             top: 20px;
-            width: 200px;
-            height: 8px;
+            width: clamp(150px, 40vw, 300px);
+            height: 10px;
             background: #333;
-            border-radius: 4px;
+            border-radius: 5px;
             overflow: hidden;
             opacity: 0;
-            transition: opacity 0.3s;
             border: 1px solid #555;
-            z-index: 15;
+            z-index: 30;
         }
         #boss-timer-fill {
             height: 100%;
@@ -151,7 +148,7 @@
             position: absolute;
             top: 50px;
             font-family: 'Russo One', sans-serif;
-            font-size: 48px;
+            font-size: clamp(30px, 10vw, 80px);
             color: rgba(255,255,255,0.05);
             font-weight: 900;
             transform: skew(-10deg);
@@ -159,68 +156,68 @@
             pointer-events: none;
         }
 
+        /* 怪物容器：隨題目大小彈性伸縮 */
         .monster-wrapper {
             position: relative;
-            width: 280px;
-            height: 280px;
+            width: 90vw; /* 手機佔 90% 寬度 */
+            max-width: 600px; /* 平板最大 600px */
+            /* 高度由內容決定，但設個最小高度避免崩塌 */
+            min-height: 300px; 
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             z-index: 5;
-            margin-top: 20px; /* 整體稍微下移 */
+            margin-top: 10px;
         }
 
-        /* 修改1：血條長度調整 (原 200% -> 90%) */
+        /* 血條 */
         .hp-container {
             position: absolute;
-            top: 10px; /* 修改2：位置下移 (原 -30px -> 10px) */
-            width: 90%; 
-            height: 24px;
+            top: 10px;
+            width: 95%; /* 相對於 monster-wrapper */
+            height: clamp(20px, 4vw, 30px);
             background: rgba(0,0,0,0.6);
-            border-radius: 12px;
+            border-radius: 15px;
             border: 2px solid #475569;
             overflow: hidden;
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);
             backdrop-filter: blur(2px);
-            z-index: 20; /* 確保在怪物上方 */
+            z-index: 20;
         }
         .hp-fill {
             height: 100%;
             background: linear-gradient(90deg, #f59e0b, #ef4444);
             width: 100%;
-            box-shadow: 0 0 10px #ef4444;
-            transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            position: relative;
+            transition: width 0.2s;
         }
         .hp-text {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             display: flex; align-items: center; justify-content: center;
-            font-size: 11px; font-weight: bold; color: white;
+            font-size: clamp(10px, 3vw, 16px);
+            font-weight: bold; color: white;
             text-shadow: 1px 1px 2px black;
             z-index: 2;
         }
 
+        /* 怪物本體：平板上縮小一點避免擋住題目 */
         .monster-sprite {
-            font-size: 120px; /* 稍微縮小怪物讓空間給圖片 */
+            font-size: clamp(60px, 15vw, 100px);
             filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.4));
             animation: float 3s ease-in-out infinite;
             cursor: pointer;
-            transition: transform 0.05s;
-            position: relative;
-            z-index: 5;
-            margin-top: 40px; /* 讓怪物位置更低 */
+            margin-top: 60px; /* 把怪物往下推，讓給題目空間 */
+            z-index: 6;
         }
         .monster-sprite:active { transform: scale(0.9); }
 
-        /* 修改3：圖片加大 (原 220px -> 340px) */
+        /* --- 題目圖片 (關鍵修改) --- */
         .music-overlay {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 340px; 
-            height: 200px;
+            top: 50px; /* 固定在容器上方顯示 */
+            left: 0;
+            width: 100%;
+            height: auto;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -229,8 +226,9 @@
         }
 
         .music-image {
-            width: 100%;
-            height: 100%;
+            width: 95%;  /* 盡量填滿容器寬度 */
+            height: auto;
+            max-height: 300px; /* 限制最大高度 */
             object-fit: contain;
             filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
             border: 2px solid rgba(59, 130, 246, 0.3);
@@ -238,79 +236,66 @@
             background: rgba(0,0,0,0.2);
         }
 
-        /* --- 底部鋼琴鍵盤 --- */
+        /* --- 鋼琴鍵盤 (修正被遮擋 & 響應式) --- */
         #piano-deck {
-            height: 140px; /* 稍微減少高度，為導航欄騰出空間 */
+            /* 修正：底部 padding 確保不被導航欄遮擋 */
+            padding: 10px 10px calc(var(--nav-height) + 20px) 10px;
+            
             background: linear-gradient(0deg, #1e293b 0%, #0f172a 100%);
-            padding: 10px 10px 10px 10px; /* 調整底部 padding */
             display: flex;
             justify-content: center;
-            gap: 6px;
+            gap: 1vw; /* 使用 vw 間距 */
             z-index: 20;
-            border-top: 1px solid rgba(255,255,255,0.05);
-            position: relative;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.3);
-            flex-shrink: 0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            width: 100%;
+            height: auto;
+            min-height: 140px;
         }
 
         .piano-key {
             flex: 1;
-            max-width: 50px;
+            /* 修正：最大寬度放大，方便平板點擊 */
+            max-width: 80px; 
+            min-width: 30px; /* 手機最小寬度 */
             background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
             border: 1px solid #475569;
             border-radius: 0 0 6px 6px;
             color: #94a3b8;
-            font-size: 14px;
+            font-size: clamp(12px, 3vw, 20px);
             font-weight: bold;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
             align-items: center;
-            padding-bottom: 10px;
+            padding-bottom: clamp(10px, 2vh, 20px);
             box-shadow: 0 4px 0 #020617;
-            transition: transform 0.1s ease, background-color 0.1s, box-shadow 0.1s;
+            transition: transform 0.1s;
             cursor: pointer;
-            position: relative;
-            overflow: hidden;
         }
-
-        .piano-key::after {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 50%;
-            background: linear-gradient(180deg, rgba(255,255,255,0.1), transparent);
-            pointer-events: none;
-        }
-
-        .piano-key .sub-text { font-size: 10px; margin-bottom: 2px; opacity: 0.7; pointer-events: none;}
 
         .piano-key:active, .piano-key.active {
-            transform: translateY(4px) scale(0.95);
-            box-shadow: 0 0 0 #020617, inset 0 0 10px rgba(0,0,0,0.3);
+            transform: translateY(4px) scale(0.98);
+            box-shadow: 0 0 0 #020617;
             background: var(--primary);
             color: white;
-            border-color: #60a5fa;
-        }
-        
-        .piano-key:active .sub-text, .piano-key.active .sub-text { 
-            color: rgba(255,255,255,0.9); 
         }
 
-        /* 修改4：底部導航欄固定 */
+        .piano-key .sub-text { font-size: clamp(8px, 2vw, 12px); margin-bottom: 4px; opacity: 0.7; }
+
+        /* --- 底部導航 (固定) --- */
         nav {
-            position: fixed; /* 固定定位 */
-            bottom: 0;       /* 貼齊底部 */
+            position: fixed;
+            bottom: 0;
             left: 0;
             width: 100%;
-            height: var(--nav-height); /* 使用變數高度 */
+            height: var(--nav-height);
             background: rgba(30, 41, 59, 0.95);
             backdrop-filter: blur(10px);
             display: flex;
             justify-content: space-around;
             align-items: center;
             border-top: 1px solid rgba(255,255,255,0.1);
-            z-index: 100; /* 提升層級確保在最上方 */
-            /* 處理 iPhone X+ 的底部安全區域 */
+            z-index: 100;
             padding-bottom: env(safe-area-inset-bottom);
         }
 
@@ -321,21 +306,20 @@
             flex-direction: column;
             align-items: center;
             color: #64748b;
-            font-size: 10px;
-            gap: 4px;
+            font-size: clamp(10px, 2vw, 12px);
             cursor: pointer;
-            transition: color 0.3s;
             width: 100%;
             height: 100%;
             justify-content: center;
         }
         .nav-icon {
-            font-size: 22px;
+            font-size: clamp(20px, 5vw, 28px);
             background: rgba(255,255,255,0.05);
-            width: 36px; height: 36px;
-            border-radius: 10px;
+            width: clamp(36px, 8vw, 48px); 
+            height: clamp(36px, 8vw, 48px);
+            border-radius: 12px;
             display: flex; justify-content: center; align-items: center;
-            transition: all 0.2s;
+            margin-bottom: 4px;
         }
         .nav-btn.active .nav-icon {
             background: var(--accent);
@@ -350,17 +334,16 @@
             bottom: -100%;
             left: 0;
             width: 100%;
-            height: 70%;
-            background: rgba(15, 23, 42, 0.95);
+            height: 75%;
+            background: rgba(15, 23, 42, 0.98);
             backdrop-filter: blur(20px);
             border-radius: 30px 30px 0 0;
             transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            z-index: 200; /* 高於導航欄 */
+            z-index: 200;
             display: flex;
             flex-direction: column;
             box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
             border-top: 1px solid rgba(255,255,255,0.1);
-            /* 抽屜打開時也要考慮底部安全區域 */
             padding-bottom: env(safe-area-inset-bottom);
         }
         #upgrade-drawer.open { bottom: 0; }
@@ -374,18 +357,17 @@
         }
         .drawer-title { 
             font-family: 'Orbitron', 'Russo One'; 
-            font-size: 22px; 
+            font-size: 24px; 
             color: var(--hero-color); 
-            text-shadow: 0 0 10px rgba(236, 72, 153, 0.3);
         }
-        .close-btn { background: rgba(255,255,255,0.1); border: none; width: 32px; height: 32px; border-radius: 50%; color: white; cursor: pointer; font-size: 18px;}
+        .close-btn { background: rgba(255,255,255,0.1); border: none; width: 36px; height: 36px; border-radius: 50%; color: white; cursor: pointer; font-size: 20px;}
 
         .upgrade-scroll { flex: 1; overflow-y: auto; padding: 20px; }
         
         .upgrade-item {
             background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
             margin-bottom: 15px;
-            padding: 15px 20px;
+            padding: 20px;
             border-radius: 16px;
             border: 1px solid rgba(255,255,255,0.05);
             display: flex;
@@ -393,25 +375,23 @@
             align-items: center;
         }
 
-        .item-info h3 { margin: 0; font-size: 16px; color: var(--primary); }
-        .item-info p { margin: 5px 0 0; font-size: 12px; color: #94a3b8; }
+        .item-info h3 { margin: 0; font-size: 18px; color: var(--primary); }
+        .item-info p { margin: 5px 0 0; font-size: 14px; color: #94a3b8; }
 
         .btn-upgrade {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
+            padding: 10px 24px;
+            border-radius: 25px;
             font-weight: bold;
-            font-size: 13px;
-            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            font-size: 14px;
             cursor: pointer;
-            white-space: nowrap;
-            min-width: 90px;
+            min-width: 100px;
         }
-        .btn-upgrade:disabled { background: #334155; color: #64748b; box-shadow: none; cursor: not-allowed; }
+        .btn-upgrade:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
 
-        /* --- 傷害數字特效 --- */
+        /* --- 特效 --- */
         .damage-number {
             position: absolute;
             font-family: 'Russo One', sans-serif;
@@ -421,10 +401,10 @@
             pointer-events: none;
             animation: damageFly 1s forwards;
             z-index: 50;
+            font-size: clamp(16px, 5vw, 32px); /* 傷害字體響應式 */
         }
         .crit { color: var(--gold); font-size: 1.5em; text-shadow: 0 0 10px var(--gold); }
 
-        /* --- 動畫定義 --- */
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         @keyframes popIn { 0% { transform: scale(0); } 80% { transform: scale(1.1); } 100% { transform: scale(1); } }
         @keyframes damageFly { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 20% { transform: translateY(-30px) scale(1.2); opacity: 1; } 100% { transform: translateY(-80px) scale(1); opacity: 0; } }
@@ -479,14 +459,17 @@
                 <div class="hp-text"><span id="hp-current">10</span> / <span id="hp-max">10</span></div>
             </div>
 
+            <!-- 怪物本體 (點擊區域) -->
             <div class="monster-sprite" id="monster-visual" onclick="tapDamage()">👾</div>
 
+            <!-- 音樂圖片 (覆蓋層) -->
             <div class="music-overlay" id="music-overlay">
                 <img class="music-image" id="music-image" src="" alt="Music notation">
             </div>
         </div>
     </section>
 
+    <!-- 鋼琴鍵盤 -->
     <section id="piano-deck">
         <button class="piano-key" onclick="handleInput('C')"><span class="sub-text">Do</span>C</button>
         <button class="piano-key" onclick="handleInput('D')"><span class="sub-text">Re</span>D</button>
@@ -497,7 +480,7 @@
         <button class="piano-key" onclick="handleInput('B')"><span class="sub-text">Si</span>B</button>
     </section>
 
-    <!-- 導航 (固定在底部) -->
+    <!-- 底部導航 -->
     <nav>
         <button class="nav-btn active">
             <div class="nav-icon">🎮</div>
@@ -678,9 +661,6 @@
             
             const imgElement = document.getElementById('music-image');
             imgElement.src = imageUrl;
-            
-            console.log('載入圖片:', imageUrl);
-            console.log('正確答案:', GameState.currentNote);
         }
 
         function tapDamage() {
@@ -818,6 +798,7 @@
                 background: rgba(0,0,0,0.8); color: white; padding: 12px 24px;
                 border-radius: 30px; z-index: 300; font-weight: bold; border: 1px solid rgba(255,255,255,0.2);
                 animation: popIn 0.3s; pointer-events: none; text-align: center;
+                font-size: clamp(14px, 4vw, 20px);
             `;
             toast.innerText = msg;
             document.body.appendChild(toast);
@@ -827,8 +808,13 @@
         function initParticles() {
             const canvas = document.getElementById('bg-canvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
 
             const particles = [];
             for(let i=0; i<50; i++) {
