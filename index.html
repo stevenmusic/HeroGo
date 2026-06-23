@@ -2,7 +2,6 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <!-- 強制使用最大縮放，防止瀏覽器自動縮放導致排版偏離 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>HeroGo</title>
     <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Noto+Sans+TC:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
@@ -18,6 +17,7 @@
             --hero-color: #ec4899; 
             --hero-secondary: #8b5cf6; 
             --nav-height: 70px; /* 導航欄高度 */
+            --safe-bottom: env(safe-area-inset-bottom);
         }
 
         * { box-sizing: border-box; touch-action: manipulation; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -28,17 +28,15 @@
             font-family: 'Noto Sans TC', sans-serif;
             background: radial-gradient(circle at top, #1e1b4b 0%, #0f172a 60%, #000000 100%);
             color: var(--text-main);
-            /* 防止滾動，鎖定畫面 */
-            overflow: hidden; 
+            overflow: hidden;
             height: 100vh;
             width: 100vw;
             display: flex;
             flex-direction: column;
-            /* iOS 安全區域 */
-            padding-bottom: env(safe-area-inset-bottom);
+            /* 確保 body 底部有空間給導航欄 */
+            padding-bottom: var(--nav-height); 
         }
 
-        /* --- 背景粒子 --- */
         #bg-canvas {
             position: absolute;
             top: 0; left: 0;
@@ -50,7 +48,7 @@
 
         /* --- 頂部儀表板 --- */
         header {
-            flex-shrink: 0; /* 防止被壓縮 */
+            flex-shrink: 0;
             min-height: 100px;
             padding: 10px 20px 5px 20px;
             background: linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(15, 23, 42, 0.4) 100%, transparent 100%);
@@ -68,7 +66,7 @@
         .hero-title {
             font-family: 'Orbitron', 'Russo One', sans-serif;
             font-weight: 900;
-            font-size: clamp(24px, 5vw, 36px); /* 響應式字體大小 */
+            font-size: clamp(24px, 5vw, 36px);
             color: var(--hero-color);
             text-shadow: 0 0 25px rgba(236, 72, 153, 0.7);
             letter-spacing: 2px;
@@ -88,7 +86,7 @@
             display: flex;
             gap: clamp(5px, 1vw, 15px);
             width: 100%;
-            max-width: 800px; /* 平板上限 */
+            max-width: 800px;
             justify-content: center;
         }
 
@@ -102,14 +100,14 @@
             backdrop-filter: blur(4px);
             flex: 1;
             justify-content: center;
-            min-width: 80px; /* 防止過小 */
+            min-width: 80px;
         }
 
         .icon { font-size: clamp(16px, 4vw, 24px); margin-right: 8px; }
         .label { font-size: clamp(8px, 2vw, 12px); color: #94a3b8; text-transform: uppercase; display: block; }
         .value { font-family: 'Russo One', sans-serif; font-size: clamp(14px, 4vw, 20px); color: #fff; }
 
-        /* --- 主遊戲區 (核心響應式區域) --- */
+        /* --- 主遊戲區 --- */
         #game-stage {
             flex: 1;
             position: relative;
@@ -117,17 +115,18 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start; /* 從上往下排，確保大圖片可見 */
+            justify-content: flex-start; /* 從上往下排 */
             padding-top: 10px;
-            /* 修正：確保內容不被底部導航欄遮住，且不被鋼琴遮住 */
-            padding-bottom: calc(var(--nav-height) + 180px); 
             width: 100%;
+            /* 預留空間：琴鍵高度 + 琴鍵Padding + 導航欄高度 */
+            padding-bottom: calc(160px + 20px + var(--nav-height)); 
             overflow: hidden;
         }
 
+        /* 怪物倒數 (置於最頂層) */
         #boss-timer-bar {
             position: absolute;
-            top: 20px;
+            top: 10px; /* 遠離血條 */
             width: clamp(150px, 40vw, 300px);
             height: 10px;
             background: #333;
@@ -146,7 +145,7 @@
 
         .stage-indicator {
             position: absolute;
-            top: 50px;
+            top: 40px;
             font-family: 'Russo One', sans-serif;
             font-size: clamp(30px, 10vw, 80px);
             color: rgba(255,255,255,0.05);
@@ -156,33 +155,34 @@
             pointer-events: none;
         }
 
-        /* 怪物容器：隨題目大小彈性伸縮 */
+        /* 核心容器：包含血條、怪物、題目 */
         .monster-wrapper {
             position: relative;
-            width: 90vw; /* 手機佔 90% 寬度 */
-            max-width: 600px; /* 平板最大 600px */
-            /* 高度由內容決定，但設個最小高度避免崩塌 */
-            min-height: 300px; 
+            width: 90vw;
+            max-width: 600px;
+            /* 增加高度以容納平板上的大圖片 */
+            min-height: 400px; 
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            /* 居中顯示整體 */
+            justify-content: center; 
+            margin-top: 30px; /* 與倒數保持距離 */
             z-index: 5;
-            margin-top: 10px;
         }
 
-        /* 血條 */
+        /* 1. 血條 */
         .hp-container {
             position: absolute;
-            top: 10px;
-            width: 95%; /* 相對於 monster-wrapper */
+            top: 0; /* 位於容器最上方 */
+            width: 95%;
             height: clamp(20px, 4vw, 30px);
             background: rgba(0,0,0,0.6);
             border-radius: 15px;
             border: 2px solid #475569;
             overflow: hidden;
             backdrop-filter: blur(2px);
-            z-index: 20;
+            z-index: 25;
         }
         .hp-fill {
             height: 100%;
@@ -200,35 +200,38 @@
             z-index: 2;
         }
 
-        /* 怪物本體：平板上縮小一點避免擋住題目 */
+        /* 2. 怪物本體 */
         .monster-sprite {
+            position: absolute;
+            top: 40px; /* 血條下方 */
             font-size: clamp(60px, 15vw, 100px);
             filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.4));
             animation: float 3s ease-in-out infinite;
             cursor: pointer;
-            margin-top: 60px; /* 把怪物往下推，讓給題目空間 */
-            z-index: 6;
+            z-index: 20;
         }
         .monster-sprite:active { transform: scale(0.9); }
 
-        /* --- 題目圖片 (關鍵修改) --- */
+        /* 3. 題目圖片 */
         .music-overlay {
             position: absolute;
-            top: 50px; /* 固定在容器上方顯示 */
+            top: 160px; /* 怪物下方 */
             left: 0;
             width: 100%;
             height: auto;
+            /* 讓圖片高度自動延伸，填滿下方空間，但不超過容器底部太多 */
             display: flex;
             justify-content: center;
-            align-items: center;
-            z-index: 10;
+            align-items: flex-start; 
+            z-index: 15;
             pointer-events: none;
         }
 
         .music-image {
-            width: 95%;  /* 盡量填滿容器寬度 */
+            width: 95%;
             height: auto;
-            max-height: 300px; /* 限制最大高度 */
+            /* 平板上可以更高 */
+            max-height: 350px; 
             object-fit: contain;
             filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
             border: 2px solid rgba(59, 130, 246, 0.3);
@@ -236,53 +239,63 @@
             background: rgba(0,0,0,0.2);
         }
 
-        /* --- 鋼琴鍵盤 (修正被遮擋 & 響應式) --- */
+        /* --- 鋼琴鍵盤 --- */
         #piano-deck {
-            /* 修正：底部 padding 確保不被導航欄遮擋 */
-            padding: 10px 10px calc(var(--nav-height) + 20px) 10px;
+            /* 關鍵修正：底部 Padding 確保不被導航欄擋住 */
+            padding: 10px 10px calc(var(--nav-height) + 30px) 10px; 
             
             background: linear-gradient(0deg, #1e293b 0%, #0f172a 100%);
             display: flex;
             justify-content: center;
-            gap: 1vw; /* 使用 vw 間距 */
+            gap: 1vw;
             z-index: 20;
-            border-top: 1px solid rgba(255,255,255,0.1);
+            border-top: 1px solid rgba(255,255,255,0.05);
             width: 100%;
             height: auto;
-            min-height: 140px;
+            /* 最小高度，防止在橫屏平板太矮 */
+            min-height: 160px; 
+            flex-shrink: 0;
         }
 
         .piano-key {
             flex: 1;
-            /* 修正：最大寬度放大，方便平板點擊 */
-            max-width: 80px; 
-            min-width: 30px; /* 手機最小寬度 */
+            max-width: 80px;
+            min-width: 30px;
             background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
             border: 1px solid #475569;
-            border-radius: 0 0 6px 6px;
+            border-radius: 0 0 8px 8px;
             color: #94a3b8;
-            font-size: clamp(12px, 3vw, 20px);
+            font-size: clamp(14px, 3vw, 24px);
             font-weight: bold;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
             align-items: center;
-            padding-bottom: clamp(10px, 2vh, 20px);
-            box-shadow: 0 4px 0 #020617;
+            padding-bottom: 15px;
+            box-shadow: 0 5px 0 #020617;
             transition: transform 0.1s;
             cursor: pointer;
+            position: relative;
+        }
+
+        .piano-key::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 50%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.1), transparent);
+            pointer-events: none;
         }
 
         .piano-key:active, .piano-key.active {
-            transform: translateY(4px) scale(0.98);
+            transform: translateY(5px) scale(0.98);
             box-shadow: 0 0 0 #020617;
             background: var(--primary);
             color: white;
         }
 
-        .piano-key .sub-text { font-size: clamp(8px, 2vw, 12px); margin-bottom: 4px; opacity: 0.7; }
+        .piano-key .sub-text { font-size: clamp(8px, 2vw, 12px); margin-bottom: 5px; opacity: 0.7; }
 
-        /* --- 底部導航 (固定) --- */
+        /* --- 底部導航 --- */
         nav {
             position: fixed;
             bottom: 0;
@@ -296,7 +309,7 @@
             align-items: center;
             border-top: 1px solid rgba(255,255,255,0.1);
             z-index: 100;
-            padding-bottom: env(safe-area-inset-bottom);
+            padding-bottom: var(--safe-bottom);
         }
 
         .nav-btn {
@@ -344,7 +357,7 @@
             flex-direction: column;
             box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
             border-top: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: env(safe-area-inset-bottom);
+            padding-bottom: var(--safe-bottom);
         }
         #upgrade-drawer.open { bottom: 0; }
 
@@ -391,7 +404,6 @@
         }
         .btn-upgrade:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
 
-        /* --- 特效 --- */
         .damage-number {
             position: absolute;
             font-family: 'Russo One', sans-serif;
@@ -401,7 +413,7 @@
             pointer-events: none;
             animation: damageFly 1s forwards;
             z-index: 50;
-            font-size: clamp(16px, 5vw, 32px); /* 傷害字體響應式 */
+            font-size: clamp(16px, 5vw, 32px);
         }
         .crit { color: var(--gold); font-size: 1.5em; text-shadow: 0 0 10px var(--gold); }
 
@@ -451,18 +463,20 @@
     <section id="game-stage">
         <div class="stage-indicator">STAGE <span id="bg-stage-num">1</span></div>
         
+        <!-- 1. 倒數 (置頂) -->
         <div id="boss-timer-bar"><div id="boss-timer-fill"></div></div>
 
         <div class="monster-wrapper">
+            <!-- 2. 血條 (最上方) -->
             <div class="hp-container">
                 <div class="hp-fill" id="hp-bar"></div>
                 <div class="hp-text"><span id="hp-current">10</span> / <span id="hp-max">10</span></div>
             </div>
 
-            <!-- 怪物本體 (點擊區域) -->
+            <!-- 3. 怪物 (血條下方) -->
             <div class="monster-sprite" id="monster-visual" onclick="tapDamage()">👾</div>
 
-            <!-- 音樂圖片 (覆蓋層) -->
+            <!-- 4. 題目 (怪物下方) -->
             <div class="music-overlay" id="music-overlay">
                 <img class="music-image" id="music-image" src="" alt="Music notation">
             </div>
@@ -734,7 +748,7 @@
             
             const rect = document.querySelector('.monster-wrapper').getBoundingClientRect();
             const x = rect.left + rect.width/2 + (Math.random()-0.5)*100;
-            const y = rect.top + rect.height/2;
+            const y = rect.top + rect.height/3; // 稍微靠上避免擋住題目
             
             el.style.left = x + 'px';
             el.style.top = y + 'px';
