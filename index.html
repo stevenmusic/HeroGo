@@ -179,6 +179,7 @@
             height: 100%;
             object-fit: contain;
             filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
+            border: 2px solid #3b82f6; /* 添加邊框幫助調試 */
         }
 
         /* --- 底部鋼琴鍵盤 --- */
@@ -605,7 +606,25 @@
             
             // 根據文件名生成圖片路徑
             const imageUrl = `images/treble/IMG_${randomImgNum}.png`;
-            document.getElementById('music-image').src = imageUrl;
+            
+            // 調試：顯示當前選擇的圖片路徑
+            console.log('Loading image:', imageUrl);
+            console.log('Current note:', GameState.currentNote);
+            
+            const imgElement = document.getElementById('music-image');
+            imgElement.src = imageUrl;
+            
+            // 添加錯誤處理
+            imgElement.onerror = function() {
+                console.error('Failed to load image:', imageUrl);
+                // 如果圖片加載失敗，顯示預設的問號圖片或錯誤信息
+                imgElement.src = 'https://via.placeholder.com/200x100?text=Error'; // 錯誤占位符
+                showToast('圖片加載失敗，請檢查路徑');
+            };
+            
+            imgElement.onload = function() {
+                console.log('Image loaded successfully:', imageUrl);
+            };
         }
 
         // --- 傷害與交互 ---
