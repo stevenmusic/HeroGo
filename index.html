@@ -485,17 +485,24 @@
             { symbol: 'treble', name: 'Treble' },  // 高音譜號
             { symbol: 'bass', name: 'Bass' }      // 低音譜號
         ];
-        const NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
         
-        // 音符位置映射 - 根據五線譜位置
-        const NOTE_POSITIONS = {
-            'C': 'first_line',    // 第一線
-            'D': 'second_line',   // 第二線
-            'E': 'third_line',    // 第三線
-            'F': 'fourth_line',   // 第四線
-            'G': 'fifth_line',    // 第五線
-            'A': 'first_space',   // 第一間
-            'B': 'second_space'   // 第二間
+        // IMG_2528-2542 對應的音符映射
+        const IMG_NOTE_MAPPING = {
+            '2528': 'C4',
+            '2529': 'D4', 
+            '2530': 'E4',
+            '2531': 'F4',
+            '2532': 'G4',
+            '2533': 'A4',
+            '2534': 'B4',
+            '2535': 'C5',
+            '2536': 'D5',
+            '2537': 'E5',
+            '2538': 'F5',
+            '2539': 'G5',
+            '2540': 'A5',
+            '2541': 'B5',
+            '2542': 'C6'
         };
 
         const GameState = {
@@ -506,7 +513,7 @@
             isBoss: false,
             bossTimer: 30,
             bossMaxTime: 30,
-            currentNote: 'C',
+            currentNote: 'C4',
             currentClef: CLEFS[0],
             lastAutoTime: 0
         };
@@ -590,16 +597,14 @@
 
         function generateQuiz() {
             GameState.currentClef = CLEFS[Math.floor(Math.random() * CLEFS.length)];
-            GameState.currentNote = NOTES[Math.floor(Math.random() * NOTES.length)];
             
-            // 根據譜號和音符生成對應的圖片路徑
-            const clefType = GameState.currentClef.symbol;
-            const notePosition = NOTE_POSITIONS[GameState.currentNote];
+            // 從 IMG_NOTE_MAPPING 中隨機選擇一個音符
+            const imgNumbers = Object.keys(IMG_NOTE_MAPPING);
+            const randomImgNum = imgNumbers[Math.floor(Math.random() * imgNumbers.length)];
+            GameState.currentNote = IMG_NOTE_MAPPING[randomImgNum];
             
-            // 這裡需要替換為你實際的圖片路徑
-            // 例如: 'images/treble_C_first_line.png'
-            const imageUrl = `images/${clefType}_${GameState.currentNote}_${notePosition}.png`;
-            
+            // 根據文件名生成圖片路徑
+            const imageUrl = `images/treble/IMG_${randomImgNum}.png`;
             document.getElementById('music-image').src = imageUrl;
         }
 
@@ -616,14 +621,18 @@
             btn.classList.add('active');
             setTimeout(() => btn.classList.remove('active'), 100);
 
-            if (note === GameState.currentNote) {
+            // 比較輸入的音符和當前顯示的音符
+            const noteWithoutOctave = note; // 簡化比較，只比較音名
+            const currentNoteWithoutOctave = GameState.currentNote.substring(0, 1);
+            
+            if (noteWithoutOctave === currentNoteWithoutOctave) {
                 // 答對
                 let dmg = PlayerStats.baseDamage;
                 const isCrit = Math.random() < PlayerStats.critChance;
                 if (isCrit) dmg *= PlayerStats.critMult;
                 
                 dealDamage(Math.floor(dmg), isCrit, true);
-                generateQuiz();
+                generateQuiz(); // 答對後生成新題目
             } else {
                 showToast("音準偏差！");
             }
