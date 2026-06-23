@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>HeroGo</title>
+    <title>HeroGo - Rhythm Titans</title>
     <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Noto+Sans+TC:wght@400;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #0f172a;
-            --primary: #3b82f6;
-            --accent: #8b5cf6;
+            --primary: #3b82f6;     /* 劍/點擊 - 藍色 */
+            --secondary: #10b981;   /* 英雄/DPS - 翠綠 */
+            --accent: #8b5cf6;      /* 寵物/輔助 - 紫色 */
             --gold: #fbbf24;
             --danger: #ef4444;
             --text-main: #f8fafc;
             --glass-border: 1px solid rgba(255, 255, 255, 0.1);
             --hero-color: #ec4899; 
-            --hero-secondary: #8b5cf6; 
-            --nav-height: 70px; /* 導航欄高度 */
+            --nav-height: 70px; 
             --safe-bottom: env(safe-area-inset-bottom);
         }
 
@@ -33,8 +33,8 @@
             width: 100vw;
             display: flex;
             flex-direction: column;
-            /* 確保 body 底部有空間給導航欄 */
             padding-bottom: var(--nav-height); 
+            cursor: pointer;
         }
 
         #bg-canvas {
@@ -115,32 +115,11 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start; /* 從上往下排 */
+            justify-content: flex-start;
             padding-top: 10px;
             width: 100%;
-            /* 預留空間：琴鍵高度 + 琴鍵Padding + 導航欄高度 */
             padding-bottom: calc(160px + 20px + var(--nav-height)); 
             overflow: hidden;
-        }
-
-        /* 怪物倒數 (置於最頂層) */
-        #boss-timer-bar {
-            position: absolute;
-            top: 10px; /* 遠離血條 */
-            width: clamp(150px, 40vw, 300px);
-            height: 10px;
-            background: #333;
-            border-radius: 5px;
-            overflow: hidden;
-            opacity: 0;
-            border: 1px solid #555;
-            z-index: 30;
-        }
-        #boss-timer-fill {
-            height: 100%;
-            background: var(--danger);
-            width: 100%;
-            box-shadow: 0 0 10px var(--danger);
         }
 
         .stage-indicator {
@@ -155,26 +134,22 @@
             pointer-events: none;
         }
 
-        /* 核心容器：包含血條、怪物、題目 */
         .monster-wrapper {
             position: relative;
             width: 90vw;
             max-width: 600px;
-            /* 增加高度以容納平板上的大圖片 */
             min-height: 400px; 
             display: flex;
             flex-direction: column;
             align-items: center;
-            /* 居中顯示整體 */
             justify-content: center; 
-            margin-top: 30px; /* 與倒數保持距離 */
+            margin-top: 30px; 
             z-index: 5;
         }
 
-        /* 1. 血條 */
         .hp-container {
             position: absolute;
-            top: 0; /* 位於容器最上方 */
+            top: 0; 
             width: 95%;
             height: clamp(20px, 4vw, 30px);
             background: rgba(0,0,0,0.6);
@@ -188,7 +163,7 @@
             height: 100%;
             background: linear-gradient(90deg, #f59e0b, #ef4444);
             width: 100%;
-            transition: width 0.2s;
+            transition: width 0.1s;
         }
         .hp-text {
             position: absolute;
@@ -200,26 +175,24 @@
             z-index: 2;
         }
 
-        /* 2. 怪物本體 */
         .monster-sprite {
             position: absolute;
-            top: 40px; /* 血條下方 */
+            top: 40px; 
             font-size: clamp(60px, 15vw, 100px);
             filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.4));
             animation: float 3s ease-in-out infinite;
             cursor: pointer;
             z-index: 20;
+            transition: transform 0.05s;
         }
         .monster-sprite:active { transform: scale(0.9); }
 
-        /* 3. 題目圖片 */
         .music-overlay {
             position: absolute;
-            top: 160px; /* 怪物下方 */
+            top: 160px; 
             left: 0;
             width: 100%;
             height: auto;
-            /* 讓圖片高度自動延伸，填滿下方空間，但不超過容器底部太多 */
             display: flex;
             justify-content: center;
             align-items: flex-start; 
@@ -230,7 +203,6 @@
         .music-image {
             width: 95%;
             height: auto;
-            /* 平板上可以更高 */
             max-height: 350px; 
             object-fit: contain;
             filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
@@ -241,7 +213,6 @@
 
         /* --- 鋼琴鍵盤 --- */
         #piano-deck {
-            /* 關鍵修正：底部 Padding 確保不被導航欄擋住 */
             padding: 10px 10px calc(var(--nav-height) + 30px) 10px; 
             
             background: linear-gradient(0deg, #1e293b 0%, #0f172a 100%);
@@ -252,7 +223,6 @@
             border-top: 1px solid rgba(255,255,255,0.05);
             width: 100%;
             height: auto;
-            /* 最小高度，防止在橫屏平板太矮 */
             min-height: 160px; 
             flex-shrink: 0;
         }
@@ -380,7 +350,7 @@
         .upgrade-item {
             background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
             margin-bottom: 15px;
-            padding: 20px;
+            padding: 15px 20px;
             border-radius: 16px;
             border: 1px solid rgba(255,255,255,0.05);
             display: flex;
@@ -388,38 +358,74 @@
             align-items: center;
         }
 
-        .item-info h3 { margin: 0; font-size: 18px; color: var(--primary); }
-        .item-info p { margin: 5px 0 0; font-size: 14px; color: #94a3b8; }
+        .item-info h3 { margin: 0; font-size: 16px; color: #fff; display: flex; align-items: center; gap: 8px;}
+        .item-type { font-size: 10px; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; font-weight: bold; }
+        .type-sword { background: var(--primary); color: white; }
+        .type-hero { background: var(--secondary); color: white; }
+        .type-pet { background: var(--accent); color: white; }
+
+        .item-info p { margin: 5px 0 0; font-size: 12px; color: #94a3b8; }
 
         .btn-upgrade {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 10px 24px;
-            border-radius: 25px;
+            padding: 10px 20px;
+            border-radius: 20px;
             font-weight: bold;
             font-size: 14px;
             cursor: pointer;
-            min-width: 100px;
+            white-space: nowrap;
+            min-width: 90px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        .btn-upgrade:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+        .btn-upgrade:disabled { background: #334155; color: #64748b; cursor: not-allowed; box-shadow: none; }
 
         .damage-number {
             position: absolute;
             font-family: 'Russo One', sans-serif;
             font-weight: 900;
             color: #fff;
-            text-shadow: 0 0 5px var(--accent);
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
             pointer-events: none;
-            animation: damageFly 1s forwards;
+            animation: damageFly 0.8s ease-out forwards;
             z-index: 50;
             font-size: clamp(16px, 5vw, 32px);
         }
-        .crit { color: var(--gold); font-size: 1.5em; text-shadow: 0 0 10px var(--gold); }
+        .crit { 
+            color: #fde047; /* Tap Titans 黃色暴擊 */
+            font-size: 1.8em; 
+            text-shadow: 2px 2px 0px #b45309, 0 0 10px #fde047;
+            animation: damageCrit 0.8s ease-out forwards;
+        }
 
         @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         @keyframes popIn { 0% { transform: scale(0); } 80% { transform: scale(1.1); } 100% { transform: scale(1); } }
-        @keyframes damageFly { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 20% { transform: translateY(-30px) scale(1.2); opacity: 1; } 100% { transform: translateY(-80px) scale(1); opacity: 0; } }
+        @keyframes damageFly { 
+            0% { transform: translateY(0) scale(0.5); opacity: 0; } 
+            20% { transform: translateY(-40px) scale(1.2); opacity: 1; } 
+            100% { transform: translateY(-100px) scale(1); opacity: 0; } 
+        }
+        @keyframes damageCrit {
+            0% { transform: translateY(0) scale(0.5) rotate(-10deg); opacity: 0; }
+            20% { transform: translateY(-40px) scale(1.4) rotate(5deg); opacity: 1; }
+            100% { transform: translateY(-120px) scale(1) rotate(0deg); opacity: 0; }
+        }
+
+        /* 點擊特效 */
+        .click-effect {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: ripple 0.3s linear;
+            pointer-events: none;
+            z-index: 40;
+        }
+
+        @keyframes ripple {
+            to { transform: scale(1.5); opacity: 0; }
+        }
 
         .text-gold { color: var(--gold); }
         .hidden { display: none !important; }
@@ -462,21 +468,15 @@
 
     <section id="game-stage">
         <div class="stage-indicator">STAGE <span id="bg-stage-num">1</span></div>
-        
-        <!-- 1. 倒數 (置頂) -->
-        <div id="boss-timer-bar"><div id="boss-timer-fill"></div></div>
 
         <div class="monster-wrapper">
-            <!-- 2. 血條 (最上方) -->
             <div class="hp-container">
                 <div class="hp-fill" id="hp-bar"></div>
                 <div class="hp-text"><span id="hp-current">10</span> / <span id="hp-max">10</span></div>
             </div>
 
-            <!-- 3. 怪物 (血條下方) -->
-            <div class="monster-sprite" id="monster-visual" onclick="tapDamage()">👾</div>
+            <div class="monster-sprite" id="monster-visual" onclick="handleTapDamage(event)">👾</div>
 
-            <!-- 4. 題目 (怪物下方) -->
             <div class="music-overlay" id="music-overlay">
                 <img class="music-image" id="music-image" src="" alt="Music notation">
             </div>
@@ -555,21 +555,11 @@
         ];
         
         const noteMapping = {
-            "IMG_2528.jpeg": "C4",
-            "IMG_2529.jpeg": "D4",
-            "IMG_2530.jpeg": "E4",
-            "IMG_2531.jpeg": "F4",
-            "IMG_2532.jpeg": "G4",
-            "IMG_2533.jpeg": "A4",
-            "IMG_2534.jpeg": "B4",
-            "IMG_2535.jpeg": "C5",
-            "IMG_2536.jpeg": "D5",
-            "IMG_2537.jpeg": "E5",
-            "IMG_2538.jpeg": "F5",
-            "IMG_2539.jpeg": "G5",
-            "IMG_2540.jpeg": "A5",
-            "IMG_2541.jpeg": "B5",
-            "IMG_2542.jpeg": "C6"
+            "IMG_2528.jpeg": "C4", "IMG_2529.jpeg": "D4", "IMG_2530.jpeg": "E4",
+            "IMG_2531.jpeg": "F4", "IMG_2532.jpeg": "G4", "IMG_2533.jpeg": "A4",
+            "IMG_2534.jpeg": "B4", "IMG_2535.jpeg": "C5", "IMG_2536.jpeg": "D5",
+            "IMG_2537.jpeg": "E5", "IMG_2538.jpeg": "F5", "IMG_2539.jpeg": "G5",
+            "IMG_2540.jpeg": "A5", "IMG_2541.jpeg": "B5", "IMG_2542.jpeg": "C6"
         };
 
         const GameState = {
@@ -578,34 +568,66 @@
             monsterHp: 10,
             monsterMaxHp: 10,
             isBoss: false,
-            bossTimer: 30,
-            bossMaxTime: 30,
             currentNote: 'C4',
             currentClef: CLEFS[0],
             lastAutoTime: 0
         };
 
+        // TT2 風格數據結構
         const PlayerStats = {
-            baseDamage: 5,
-            autoDPS: 10,
-            critChance: 0.1,
-            critMult: 2.5,
-            goldMult: 1
+            tapDamage: 1,       // 點擊基礎傷害
+            skillDamage: 10,    // 答題傷害 (通常為點擊的倍數)
+            autoDPS: 0,         // 總自動傷害
+            critChance: 0.05,   // 初始暴擊率
+            critMult: 5.0,      // 初始暴擊倍率
+            goldMult: 1.0       // 金幣倍率
         };
 
+        // 裝備數據庫
+        // Type: sword (點擊+技能), hero (DPS), pet (被動)
         const Upgrades = [
-            { id: 'sword', name: '光之節拍劍', desc: '點擊與答題傷害 +5', level: 1, baseCost: 20, costFactor: 1.15, effect: () => { PlayerStats.baseDamage += 5; } },
-            { id: 'auto', name: '自動演奏機', desc: '每秒自動傷害 +15', level: 1, baseCost: 100, costFactor: 1.2, effect: () => { PlayerStats.autoDPS += 15; } },
-            { id: 'crit', name: '狂暴節奏', desc: '暴擊率 +5%, 暴擊傷害 +0.5', level: 0, baseCost: 200, costFactor: 1.5, effect: () => { PlayerStats.critChance += 0.05; PlayerStats.critMult += 0.5; } },
-            { id: 'gold', name: '搖滾天后', desc: '金幣獲取 +20%', level: 0, baseCost: 150, costFactor: 1.4, effect: () => { PlayerStats.goldMult += 0.2; } }
+            // --- 劍: 點擊與技能並重 ---
+            { 
+                id: 'sword1', name: '訓練用木劍', desc: '點擊傷害+2, 技能傷害+20', 
+                type: 'sword', level: 1, baseCost: 10, costFactor: 1.15, 
+                effect: () => { PlayerStats.tapDamage += 2; PlayerStats.skillDamage += 20; } 
+            },
+            
+            // --- 英雄: 純 DPS ---
+            { 
+                id: 'hero1', name: '見習法師', desc: '自動傷害 +5 DPS', 
+                type: 'hero', level: 0, baseCost: 50, costFactor: 1.1, 
+                effect: () => { PlayerStats.autoDPS += 5; } 
+            },
+            { 
+                id: 'hero2', name: '森林射手', desc: '自動傷害 +25 DPS', 
+                type: 'hero', level: 0, baseCost: 500, costFactor: 1.12, 
+                effect: () => { PlayerStats.autoDPS += 25; } 
+            },
+
+            // --- 寵物: 被動屬性 ---
+            { 
+                id: 'pet1', name: '幸運貓', desc: '暴擊率 +2%', 
+                type: 'pet', level: 0, baseCost: 200, costFactor: 1.5, 
+                effect: () => { PlayerStats.critChance += 0.02; } 
+            },
+            { 
+                id: 'pet2', name: '招財犬', desc: '金幣獲取 +10%', 
+                type: 'pet', level: 0, baseCost: 300, costFactor: 1.4, 
+                effect: () => { PlayerStats.goldMult += 0.1; } 
+            }
         ];
 
         function init() {
             document.querySelectorAll('img').forEach(img => {
                 img.onerror = function() {
                     this.style.display = 'none';
-                    console.error('圖片加載失敗，已隱藏:', this.src);
                 };
+            });
+
+            document.body.addEventListener('click', (e) => {
+                if (e.target.closest('button') || e.target.closest('.upgrade-scroll') || e.target.closest('nav')) return;
+                handleTapDamage(e);
             });
 
             spawnMonster();
@@ -617,37 +639,25 @@
         function gameLoop(timestamp) {
             if (timestamp - GameState.lastAutoTime > 1000) {
                 if (GameState.monsterHp > 0) {
-                    dealDamage(PlayerStats.autoDPS, false, false);
+                    dealDamage(PlayerStats.autoDPS, false, 'auto');
                 }
                 GameState.lastAutoTime = timestamp;
-
-                if (GameState.isBoss) {
-                    GameState.bossTimer--;
-                    const pct = (GameState.bossTimer / GameState.bossMaxTime) * 100;
-                    document.getElementById('boss-timer-fill').style.width = pct + '%';
-                    
-                    if (GameState.bossTimer <= 0) {
-                        respawnBoss(); 
-                    }
-                }
             }
             requestAnimationFrame(gameLoop);
         }
 
         function spawnMonster() {
-            const growth = 1.55;
+            // 成長係數: 1.35 (比之前緩和，確保持久戰)
+            const growth = 1.35; 
+            // 基礎血量: 15
             let hp = 15 * Math.pow(growth, GameState.stage - 1);
 
             if (GameState.stage % 5 === 0) {
                 GameState.isBoss = true;
-                hp *= 10;
-                GameState.bossTimer = 30;
-                GameState.bossMaxTime = 30;
-                document.getElementById('boss-timer-bar').style.opacity = 1;
+                hp *= 10; // Boss 10倍血
                 document.getElementById('monster-visual').innerText = '👹'; 
             } else {
                 GameState.isBoss = false;
-                document.getElementById('boss-timer-bar').style.opacity = 0;
                 document.getElementById('monster-visual').innerText = MONSTERS[Math.floor(Math.random() * MONSTERS.length)];
             }
 
@@ -658,28 +668,24 @@
             updateUI();
         }
 
-        function respawnBoss() {
-            showToast("BOSS 重生！");
-            GameState.bossTimer = GameState.bossMaxTime;
-            GameState.monsterHp = GameState.monsterMaxHp;
-        }
-
         function generateQuiz() {
-            GameState.currentClef = CLEFS[Math.floor(Math.random() * CLEFS.length)];
-            
             const imgFileNames = Object.keys(noteMapping);
             const randomFileName = imgFileNames[Math.floor(Math.random() * imgFileNames.length)];
             GameState.currentNote = noteMapping[randomFileName];
-            
-            const imageUrl = `images/treble/${randomFileName}`;
-            
-            const imgElement = document.getElementById('music-image');
-            imgElement.src = imageUrl;
+            document.getElementById('music-image').src = `images/treble/${randomFileName}`;
         }
 
-        function tapDamage() {
-            const dmg = Math.floor(PlayerStats.baseDamage * 0.2);
-            dealDamage(dmg, false, true);
+        function handleTapDamage(e) {
+            const x = e.clientX;
+            const y = e.clientY;
+            createRipple(x, y);
+
+            // 點擊傷害計算
+            let dmg = PlayerStats.tapDamage;
+            const isCrit = Math.random() < PlayerStats.critChance;
+            if (isCrit) dmg *= PlayerStats.critMult;
+            
+            dealDamage(Math.floor(dmg), isCrit, 'tap', x, y);
             playSound('hit');
         }
 
@@ -694,22 +700,25 @@
             const currentNoteWithoutOctave = GameState.currentNote.substring(0, 1);
             
             if (noteWithoutOctave === currentNoteWithoutOctave) {
-                let dmg = PlayerStats.baseDamage;
+                // 答題傷害計算 (技能傷害)
+                let dmg = PlayerStats.skillDamage;
                 const isCrit = Math.random() < PlayerStats.critChance;
                 if (isCrit) dmg *= PlayerStats.critMult;
                 
-                dealDamage(Math.floor(dmg), isCrit, true);
+                dealDamage(Math.floor(dmg), isCrit, 'skill');
+                playSound('hit');
                 generateQuiz(); 
             } else {
                 showToast("音準偏差！");
             }
         }
 
-        function dealDamage(amount, isCrit, isPlayerAction) {
+        function dealDamage(amount, isCrit, sourceType, x, y) {
             GameState.monsterHp -= amount;
             
-            showDamageNumber(amount, isCrit);
-            if (isPlayerAction) playSound('hit');
+            showDamageNumber(amount, isCrit, sourceType, x, y);
+            
+            if (sourceType !== 'auto') playSound('hit');
 
             if (GameState.monsterHp <= 0) {
                 onMonsterDeath();
@@ -718,7 +727,12 @@
         }
 
         function onMonsterDeath() {
-            const goldGain = Math.floor(Math.sqrt(GameState.monsterMaxHp) * (1 + PlayerStats.goldMult));
+            // TT2 金幣公式：基礎 * sqrt(怪物血量 * 係數) * 金幣倍率
+            // 這裡簡化為: sqrt(HP) * (1 + DPS貢獻係數) * 金幣倍率
+            // 讓高傷害能獲得更多金幣
+            const dpsFactor = 1 + (PlayerStats.autoDPS / 50); // DPS越高，金幣加成越多
+            const goldGain = Math.floor(Math.sqrt(GameState.monsterMaxHp) * dpsFactor * PlayerStats.goldMult);
+            
             GameState.gold += goldGain;
             
             playSound('coin');
@@ -741,20 +755,37 @@
             document.getElementById('hp-max').innerText = formatNumber(GameState.monsterMaxHp);
         }
 
-        function showDamageNumber(amount, isCrit) {
+        function showDamageNumber(amount, isCrit, sourceType, clickX, clickY) {
             const el = document.createElement('div');
             el.className = `damage-number ${isCrit ? 'crit' : ''}`;
             el.innerText = formatNumber(amount);
             
-            const rect = document.querySelector('.monster-wrapper').getBoundingClientRect();
-            const x = rect.left + rect.width/2 + (Math.random()-0.5)*100;
-            const y = rect.top + rect.height/3; // 稍微靠上避免擋住題目
+            let x, y;
+            if (sourceType === 'tap' && clickX) {
+                x = clickX;
+                y = clickY;
+            } else {
+                const rect = document.querySelector('.monster-wrapper').getBoundingClientRect();
+                x = rect.left + rect.width/2 + (Math.random()-0.5)*80;
+                y = rect.top + rect.height/3; 
+            }
             
             el.style.left = x + 'px';
             el.style.top = y + 'px';
             
             document.body.appendChild(el);
-            setTimeout(() => el.remove(), 1000);
+            setTimeout(() => el.remove(), 800);
+        }
+
+        function createRipple(x, y) {
+            const ripple = document.createElement('div');
+            ripple.className = 'click-effect';
+            ripple.style.left = (x - 25) + 'px';
+            ripple.style.top = (y - 25) + 'px';
+            ripple.style.width = '50px';
+            ripple.style.height = '50px';
+            document.body.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 300);
         }
 
         function toggleDrawer() {
@@ -770,11 +801,21 @@
                 const cost = Math.floor(u.baseCost * Math.pow(u.costFactor, u.level));
                 const canBuy = GameState.gold >= cost;
                 
+                let typeLabel = '';
+                let typeClass = '';
+                if(u.type === 'sword') { typeLabel = '劍'; typeClass = 'type-sword'; }
+                else if(u.type === 'hero') { typeLabel = '英雄'; typeClass = 'type-hero'; }
+                else if(u.type === 'pet') { typeLabel = '寵物'; typeClass = 'type-pet'; }
+
                 const item = document.createElement('div');
                 item.className = 'upgrade-item';
                 item.innerHTML = `
                     <div class="item-info">
-                        <h3>${u.name} <span style="font-size:12px;color:#666">Lv.${u.level}</span></h3>
+                        <h3>
+                            <span class="item-type ${typeClass}">${typeLabel}</span>
+                            ${u.name} 
+                            <span style="font-size:12px;color:#666; margin-left:5px;">Lv.${u.level}</span>
+                        </h3>
                         <p>${u.desc}</p>
                     </div>
                     <button class="btn-upgrade" onclick="buyUpgrade(${idx})" ${!canBuy ? 'disabled' : ''}>
@@ -800,6 +841,7 @@
         }
 
         function formatNumber(num) {
+            if (num >= 1000000000) return (num / 1000000000).toFixed(2) + 'B';
             if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
             if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
             return Math.floor(num);
