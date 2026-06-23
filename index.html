@@ -2,47 +2,788 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HeroGo! - 音樂冒險</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rhythm Titans</title>
+    <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: rgba(30, 41, 59, 0.7);
+            --primary: #3b82f6;
+            --accent: #8b5cf6;
+            --gold: #fbbf24;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        * { box-sizing: border-box; touch-action: manipulation; user-select: none; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+            background: radial-gradient(circle at top, #1e1b4b 0%, #0f172a 60%, #000000 100%);
+            color: var(--text-main);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- 背景粒子效果 --- */
+        #bg-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            opacity: 0.3;
+        }
+
+        /* --- 頂部儀表板 --- */
+        header {
+            height: 80px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, transparent 100%);
+            z-index: 20;
+            position: relative;
+        }
+
+        .resource-box {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 15px;
+            border-radius: 12px;
+            border: var(--glass-border);
+            backdrop-filter: blur(4px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .icon { font-size: 20px; margin-right: 8px; }
+        .label { font-size: 10px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; display: block; }
+        .value { font-family: 'Russo One', sans-serif; font-size: 18px; color: #fff; }
+
+        /* --- 主遊戲區 --- */
+        #game-stage {
+            flex: 1;
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* BOSS 倒數 */
+        #boss-timer-bar {
+            position: absolute;
+            top: 20px;
+            width: 200px;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        #boss-timer-fill {
+            height: 100%;
+            background: var(--danger);
+            width: 100%;
+        }
+
+        /* 關卡指示器 */
+        .stage-indicator {
+            position: absolute;
+            top: 40px;
+            font-family: 'Russo One', sans-serif;
+            font-size: 32px;
+            color: rgba(255,255,255,0.1);
+            font-weight: 900;
+            transform: skew(-10deg);
+        }
+
+        /* 怪物容器 */
+        .monster-wrapper {
+            position: relative;
+            width: 260px;
+            height: 260px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 血條 */
+        .hp-container {
+            position: absolute;
+            top: -20px;
+            width: 180%;
+            height: 24px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 12px;
+            border: 2px solid #475569;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        }
+        .hp-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f59e0b, #ef4444);
+            width: 100%;
+            box-shadow: 0 0 10px #ef4444;
+            transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .hp-text {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: bold; color: white;
+            text-shadow: 1px 1px 2px black;
+            z-index: 2;
+        }
+
+        /* 怪物本體 */
+        .monster-sprite {
+            font-size: 140px;
+            filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.4));
+            animation: float 3s ease-in-out infinite;
+            cursor: pointer;
+            transition: transform 0.05s;
+            position: relative;
+            z-index: 5;
+        }
+        .monster-sprite:active { transform: scale(0.95); }
+
+        /* 音符譜號容器 - 直接在怪物上顯示 */
+        .music-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 200px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        /* 音符譜號圖片 */
+        .music-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.5));
+        }
+
+        /* --- 底部鋼琴鍵盤 --- */
+        #piano-deck {
+            height: 160px;
+            background: linear-gradient(0deg, #1e293b 0%, #0f172a 100%);
+            padding: 10px 10px 20px 10px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            z-index: 20;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            position: relative;
+        }
+
+        .piano-key {
+            flex: 1;
+            max-width: 55px;
+            background: linear-gradient(180deg, #334155 0%, #1e293b 100%);
+            border: 1px solid #475569;
+            border-radius: 0 0 8px 8px;
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            padding-bottom: 15px;
+            box-shadow: 0 4px 0 #020617;
+            transition: all 0.1s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 按鍵內的高光 */
+        .piano-key::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 50%;
+            background: linear-gradient(180deg, rgba(255,255,255,0.1), transparent);
+            pointer-events: none;
+        }
+
+        .piano-key .sub-text { font-size: 10px; margin-bottom: 4px; opacity: 0.6; }
+
+        .piano-key:active, .piano-key.active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #020617;
+            background: var(--primary);
+            color: white;
+            border-color: #60a5fa;
+        }
+        .piano-key:active .sub-text, .piano-key.active .sub-text { color: rgba(255,255,255,0.8); }
+
+        /* --- 導航列 --- */
+        nav {
+            height: 70px;
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            z-index: 30;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #64748b;
+            font-size: 10px;
+            gap: 4px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .nav-icon {
+            font-size: 24px;
+            background: rgba(255,255,255,0.05);
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            display: flex; justify-content: center; align-items: center;
+            transition: all 0.2s;
+        }
+        .nav-btn.active .nav-icon {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
+        }
+        .nav-btn.active { color: white; }
+
+        /* --- 升級面板 (玻璃擬態) --- */
+        #upgrade-drawer {
+            position: fixed;
+            bottom: -100%;
+            left: 0;
+            width: 100%;
+            height: 75%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 30px 30px 0 0;
+            transition: bottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        #upgrade-drawer.open { bottom: 0; }
+
+        .drawer-header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .drawer-title { font-family: 'Russo One'; font-size: 22px; color: var(--text-main); }
+        .close-btn { background: rgba(255,255,255,0.1); border: none; width: 32px; height: 32px; border-radius: 50%; color: white; cursor: pointer; }
+
+        .upgrade-scroll { flex: 1; overflow-y: auto; padding: 20px; }
+        
+        .upgrade-item {
+            background: linear-gradient(90deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+            margin-bottom: 15px;
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-info h3 { margin: 0; font-size: 16px; color: var(--primary); }
+        .item-info p { margin: 5px 0 0; font-size: 12px; color: #94a3b8; }
+
+        .btn-upgrade {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 13px;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+            cursor: pointer;
+            white-space: nowrap;
+            min-width: 100px;
+        }
+        .btn-upgrade:disabled { background: #334155; color: #64748b; box-shadow: none; cursor: not-allowed; }
+
+        /* --- 傷害數字特效 --- */
+        .damage-number {
+            position: absolute;
+            font-family: 'Russo One', sans-serif;
+            font-weight: 900;
+            color: #fff;
+            text-shadow: 0 0 5px var(--accent);
+            pointer-events: none;
+            animation: damageFly 1s forwards;
+            z-index: 50;
+        }
+        .crit { color: var(--gold); font-size: 1.5em; text-shadow: 0 0 10px var(--gold); }
+
+        /* --- 動畫定義 --- */
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+        @keyframes popIn { 0% { transform: scale(0); } 80% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        @keyframes damageFly { 0% { transform: translateY(0) scale(0.5); opacity: 0; } 20% { transform: translateY(-30px) scale(1.2); opacity: 1; } 100% { transform: translateY(-80px) scale(1); opacity: 0; } }
+
+        /* 實用工具 */
+        .text-gold { color: var(--gold); }
+        .hidden { display: none !important; }
+    </style>
 </head>
 <body>
+
+    <!-- 背景特效 Canvas -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- 頂部資源 -->
     <header>
-        <h1>🎵 HeroGo! 音樂冒險</h1>
-        <p class="subtitle">日本漫畫風 • 點擊戰鬥 • 音符練習</p>
-        <div>關卡 <span id="stage">1</span>　|　波數 <span id="wave">1</span></div>
+        <div class="resource-box">
+            <span class="icon">⚔️</span>
+            <div>
+                <span class="label">STAGE</span>
+                <span class="value" id="header-stage">1</span>
+            </div>
+        </div>
+        <div class="resource-box">
+            <span class="icon">⚡</span>
+            <div>
+                <span class="label">DPS</span>
+                <span class="value" id="header-dps">0</span>
+            </div>
+        </div>
+        <div class="resource-box" style="border-color: rgba(251, 191, 36, 0.3);">
+            <span class="icon">💰</span>
+            <div>
+                <span class="label">GOLD</span>
+                <span class="value text-gold" id="header-gold">0</span>
+            </div>
+        </div>
     </header>
 
-    <main>
-        <div id="monster-container" class="monster-container">
-            <div id="monster" class="monster">🎶</div>
-            <div id="note-display" class="note-display"></div>
-            <div id="damage-popup" class="damage-popup"></div>
-        </div>
+    <!-- 遊戲主畫面 -->
+    <section id="game-stage">
+        <div class="stage-indicator">STAGE <span id="bg-stage-num">1</span></div>
+        
+        <!-- BOSS 倒數 -->
+        <div id="boss-timer-bar"><div id="boss-timer-fill"></div></div>
 
-        <div class="hp-container">
-            <div id="hp-bar" class="hp-bar"><div id="hp-bar-inner"></div></div>
-        </div>
-        <p>HP: <span id="hp">150</span> / <span id="maxhp">150</span></p>
+        <div class="monster-wrapper">
+            <div class="hp-container">
+                <div class="hp-fill" id="hp-bar"></div>
+                <div class="hp-text"><span id="hp-current">10</span> / <span id="hp-max">10</span></div>
+            </div>
 
-        <div class="stats">
-            點擊傷害: <span id="tapDmg">10</span>　|　DPS: <span id="dps">8</span><br>
-            金幣: <span id="gold">0</span>　|　遺物: <span id="relics">0</span>
-        </div>
+            <!-- 怪物本體 -->
+            <div class="monster-sprite" id="monster-visual" onclick="tapDamage()">👾</div>
 
-        <div class="actions">
-            <button onclick="tapMonster()" class="tap-btn">⚔️ 斬擊音符！</button>
-            <button onclick="upgradeHero()">🔥 升級英雄</button>
-            <button onclick="hireCompanion()">👥 召喚夥伴</button>
-            <button onclick="prestige()" class="prestige-btn">🌟 重生</button>
+            <!-- 音符譜號覆蓋層 - 直接在怪物上顯示 -->
+            <div class="music-overlay" id="music-overlay">
+                <img class="music-image" id="music-image" src="" alt="Music notation">
+            </div>
         </div>
+    </section>
 
-        <div class="music-panel">
-            <h3>🎼 目前音符</h3>
-            <div id="current-note" class="big-note">C4</div>
+    <!-- 鋼琴鍵盤 -->
+    <section id="piano-deck">
+        <button class="piano-key" onclick="handleInput('C')"><span class="sub-text">Do</span>C</button>
+        <button class="piano-key" onclick="handleInput('D')"><span class="sub-text">Re</span>D</button>
+        <button class="piano-key" onclick="handleInput('E')"><span class="sub-text">Mi</span>E</button>
+        <button class="piano-key" onclick="handleInput('F')"><span class="sub-text">Fa</span>F</button>
+        <button class="piano-key" onclick="handleInput('G')"><span class="sub-text">Sol</span>G</button>
+        <button class="piano-key" onclick="handleInput('A')"><span class="sub-text">La</span>A</button>
+        <button class="piano-key" onclick="handleInput('B')"><span class="sub-text">Si</span>B</button>
+    </section>
+
+    <!-- 導航 -->
+    <nav>
+        <button class="nav-btn active">
+            <div class="nav-icon">🎮</div>
+            <span>戰鬥</span>
+        </button>
+        <button class="nav-btn" onclick="toggleDrawer()">
+            <div class="nav-icon">🛠️</div>
+            <span>升級</span>
+        </button>
+        <button class="nav-btn">
+            <div class="nav-icon">🏆</div>
+            <span>排行</span>
+        </button>
+    </nav>
+
+    <!-- 升級面板 -->
+    <aside id="upgrade-drawer">
+        <div class="drawer-header">
+            <span class="drawer-title">裝備升級</span>
+            <button class="close-btn" onclick="toggleDrawer()">✕</button>
         </div>
-    </main>
+        <div class="upgrade-scroll" id="upgrade-list"></div>
+    </aside>
 
-    <script type="module" src="game.js"></script>
+    <!-- 音效 (使用 Web Audio API 生成，避免外部文件) -->
+    <script>
+        // 簡單的音效合成器
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'hit') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.1);
+            } else if (type === 'coin') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1800, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+            }
+        }
+    </script>
+
+    <!-- 遊戲邏輯 -->
+    <script>
+        // --- 數據與配置 ---
+        const MONSTERS = ['👾', '👹', '👻', '🤖', '🦖', '👽', '💀', '🧟'];
+        const CLEFS = [
+            { symbol: 'treble', name: 'Treble' },  // 高音譜號
+            { symbol: 'bass', name: 'Bass' }      // 低音譜號
+        ];
+        const NOTES = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+        
+        // 音符位置映射 - 根據五線譜位置
+        const NOTE_POSITIONS = {
+            'C': 'first_line',    // 第一線
+            'D': 'second_line',   // 第二線
+            'E': 'third_line',    // 第三線
+            'F': 'fourth_line',   // 第四線
+            'G': 'fifth_line',    // 第五線
+            'A': 'first_space',   // 第一間
+            'B': 'second_space'   // 第二間
+        };
+
+        const GameState = {
+            gold: 0,
+            stage: 1,
+            monsterHp: 10,
+            monsterMaxHp: 10,
+            isBoss: false,
+            bossTimer: 30,
+            bossMaxTime: 30,
+            currentNote: 'C',
+            currentClef: CLEFS[0],
+            lastAutoTime: 0
+        };
+
+        const PlayerStats = {
+            baseDamage: 5,
+            autoDPS: 10,
+            critChance: 0.1,
+            critMult: 2.5,
+            goldMult: 1
+        };
+
+        const Upgrades = [
+            { id: 'sword', name: '光之節拍劍', desc: '點擊與答題傷害 +5', level: 1, baseCost: 20, costFactor: 1.15, effect: () => { PlayerStats.baseDamage += 5; } },
+            { id: 'auto', name: '自動演奏機', desc: '每秒自動傷害 +15', level: 1, baseCost: 100, costFactor: 1.2, effect: () => { PlayerStats.autoDPS += 15; } },
+            { id: 'crit', name: '狂暴節奏', desc: '暴擊率 +5%, 暴擊傷害 +0.5', level: 0, baseCost: 200, costFactor: 1.5, effect: () => { PlayerStats.critChance += 0.05; PlayerStats.critMult += 0.5; } },
+            { id: 'gold', name: '搖滾天后', desc: '金幣獲取 +20%', level: 0, baseCost: 150, costFactor: 1.4, effect: () => { PlayerStats.goldMult += 0.2; } }
+        ];
+
+        // --- 初始化 ---
+        function init() {
+            spawnMonster();
+            renderUpgrades();
+            initParticles(); // 啟動背景粒子
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- 核心循環 ---
+        function gameLoop(timestamp) {
+            // 自動攻擊 (每秒一次)
+            if (timestamp - GameState.lastAutoTime > 1000) {
+                if (GameState.monsterHp > 0) {
+                    dealDamage(PlayerStats.autoDPS, false, false);
+                }
+                GameState.lastAutoTime = timestamp;
+
+                // BOSS 倒數
+                if (GameState.isBoss) {
+                    GameState.bossTimer--;
+                    const pct = (GameState.bossTimer / GameState.bossMaxTime) * 100;
+                    document.getElementById('boss-timer-fill').style.width = pct + '%';
+                    
+                    if (GameState.bossTimer <= 0) {
+                        respawnBoss(); // 時間到重置 Boss
+                    }
+                }
+            }
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- 怪物邏輯 ---
+        function spawnMonster() {
+            const growth = 1.55;
+            let hp = 15 * Math.pow(growth, GameState.stage - 1);
+
+            if (GameState.stage % 5 === 0) {
+                GameState.isBoss = true;
+                hp *= 10;
+                GameState.bossTimer = 30;
+                GameState.bossMaxTime = 30;
+                document.getElementById('boss-timer-bar').style.opacity = 1;
+                document.getElementById('monster-visual').innerText = '👹'; // Boss Icon
+            } else {
+                GameState.isBoss = false;
+                document.getElementById('boss-timer-bar').style.opacity = 0;
+                document.getElementById('monster-visual').innerText = MONSTERS[Math.floor(Math.random() * MONSTERS.length)];
+            }
+
+            GameState.monsterMaxHp = Math.floor(hp);
+            GameState.monsterHp = GameState.monsterMaxHp;
+            
+            generateQuiz();
+            updateUI();
+        }
+
+        function respawnBoss() {
+            showToast("BOSS 重生！");
+            GameState.bossTimer = GameState.bossMaxTime;
+            GameState.monsterHp = GameState.monsterMaxHp;
+        }
+
+        function generateQuiz() {
+            GameState.currentClef = CLEFS[Math.floor(Math.random() * CLEFS.length)];
+            GameState.currentNote = NOTES[Math.floor(Math.random() * NOTES.length)];
+            
+            // 根據譜號和音符生成對應的圖片路徑
+            const clefType = GameState.currentClef.symbol;
+            const notePosition = NOTE_POSITIONS[GameState.currentNote];
+            
+            // 這裡需要替換為你實際的圖片路徑
+            // 例如: 'images/treble_C_first_line.png'
+            const imageUrl = `images/${clefType}_${GameState.currentNote}_${notePosition}.png`;
+            
+            document.getElementById('music-image').src = imageUrl;
+        }
+
+        // --- 傷害與交互 ---
+        function tapDamage() {
+            // 點擊怪物造成 20% 傷害
+            const dmg = Math.floor(PlayerStats.baseDamage * 0.2);
+            dealDamage(dmg, false, true);
+            playSound('hit');
+        }
+
+        function handleInput(note) {
+            const btn = document.querySelector(`.piano-key[onclick="handleInput('${note}')"]`);
+            btn.classList.add('active');
+            setTimeout(() => btn.classList.remove('active'), 100);
+
+            if (note === GameState.currentNote) {
+                // 答對
+                let dmg = PlayerStats.baseDamage;
+                const isCrit = Math.random() < PlayerStats.critChance;
+                if (isCrit) dmg *= PlayerStats.critMult;
+                
+                dealDamage(Math.floor(dmg), isCrit, true);
+                generateQuiz();
+            } else {
+                showToast("音準偏差！");
+            }
+        }
+
+        function dealDamage(amount, isCrit, isPlayerAction) {
+            GameState.monsterHp -= amount;
+            
+            // 視覺特效
+            showDamageNumber(amount, isCrit);
+            if (isPlayerAction) playSound('hit');
+
+            if (GameState.monsterHp <= 0) {
+                onMonsterDeath();
+            }
+            updateUI();
+        }
+
+        function onMonsterDeath() {
+            const goldGain = Math.floor(Math.sqrt(GameState.monsterMaxHp) * (1 + PlayerStats.goldMult));
+            GameState.gold += goldGain;
+            
+            playSound('coin');
+            showToast(`擊殺! +${formatNumber(goldGain)} G`);
+            
+            GameState.stage++;
+            spawnMonster();
+            renderUpgrades(); // 刷新按鈕狀態
+        }
+
+        // --- UI 更新 ---
+        function updateUI() {
+            document.getElementById('header-stage').innerText = GameState.stage;
+            document.getElementById('bg-stage-num').innerText = GameState.stage;
+            document.getElementById('header-gold').innerText = formatNumber(GameState.gold);
+            document.getElementById('header-dps').innerText = formatNumber(Math.floor(PlayerStats.autoDPS));
+
+            const hpPct = Math.max(0, (GameState.monsterHp / GameState.monsterMaxHp) * 100);
+            document.getElementById('hp-bar').style.width = hpPct + '%';
+            document.getElementById('hp-current').innerText = formatNumber(GameState.monsterHp);
+            document.getElementById('hp-max').innerText = formatNumber(GameState.monsterMaxHp);
+        }
+
+        function showDamageNumber(amount, isCrit) {
+            const el = document.createElement('div');
+            el.className = `damage-number ${isCrit ? 'crit' : ''}`;
+            el.innerText = formatNumber(amount);
+            
+            // 隨機位置
+            const rect = document.querySelector('.monster-wrapper').getBoundingClientRect();
+            const x = rect.left + rect.width/2 + (Math.random()-0.5)*100;
+            const y = rect.top + rect.height/2;
+            
+            el.style.left = x + 'px';
+            el.style.top = y + 'px';
+            
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 1000);
+        }
+
+        function toggleDrawer() {
+            const drawer = document.getElementById('upgrade-drawer');
+            drawer.classList.toggle('open');
+        }
+
+        // --- 升級系統 ---
+        function renderUpgrades() {
+            const list = document.getElementById('upgrade-list');
+            list.innerHTML = '';
+            
+            Upgrades.forEach((u, idx) => {
+                const cost = Math.floor(u.baseCost * Math.pow(u.costFactor, u.level));
+                const canBuy = GameState.gold >= cost;
+                
+                const item = document.createElement('div');
+                item.className = 'upgrade-item';
+                item.innerHTML = `
+                    <div class="item-info">
+                        <h3>${u.name} <span style="font-size:12px;color:#666">Lv.${u.level}</span></h3>
+                        <p>${u.desc}</p>
+                    </div>
+                    <button class="btn-upgrade" onclick="buyUpgrade(${idx})" ${!canBuy ? 'disabled' : ''}>
+                        ⚡ ${formatNumber(cost)}
+                    </button>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        function buyUpgrade(idx) {
+            const u = Upgrades[idx];
+            const cost = Math.floor(u.baseCost * Math.pow(u.costFactor, u.level));
+            
+            if (GameState.gold >= cost) {
+                GameState.gold -= cost;
+                u.level++;
+                u.effect();
+                updateUI();
+                renderUpgrades();
+                playSound('hit');
+            }
+        }
+
+        // --- 輔助功能 ---
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(2) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+            return Math.floor(num);
+        }
+
+        function showToast(msg) {
+            // 簡單的提示
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                background: rgba(0,0,0,0.8); color: white; padding: 10px 20px;
+                border-radius: 20px; z-index: 200; font-weight: bold;
+                animation: popIn 0.3s; pointer-events: none;
+            `;
+            toast.innerText = msg;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 1500);
+        }
+
+        // --- 背景粒子效果 ---
+        function initParticles() {
+            const canvas = document.getElementById('bg-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            for(let i=0; i<30; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    r: Math.random() * 2,
+                    d: Math.random() * Math.PI * 2,
+                    s: Math.random() * 0.5 + 0.1
+                });
+            }
+
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = 'rgba(255,255,255,0.5)';
+                particles.forEach(p => {
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+                    ctx.fill();
+                    p.y -= p.s;
+                    p.x += Math.sin(p.d) * 0.5;
+                    if(p.y < -10) p.y = canvas.height + 10;
+                });
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        // 啟動遊戲
+        init();
+    </script>
 </body>
 </html>
